@@ -1,5 +1,5 @@
 import numpy as np
 
-class Fish(object):
+class Shark(object):
     def __init__(self):
         pass
