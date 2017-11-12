@@ -9,65 +9,70 @@ import matplotlib.animation as manimation
 
 
 class aquarium(object):
-    def __init__(self, fishes, sharks, size, grid_size):
-        pass
+    def __init__(self, fishes, sharks, size_X, size_Y):
 
-    # Randomly place fishes and sharks
+        #ToDo Init object variables
+        self.video_enabled = False
+        self.size_X = size_X
+        self.size_Y = size_Y
 
 
+        #Randomly place fishes and sharks
+        self.fishes = np.matrix(random(size=(fishes,2)))*np.matrix([[size_X,0],[0,size_Y]])
+        self.sharks = np.matrix(random(size=(sharks,2)))*np.matrix([[size_X,0],[0,size_Y]])
+
+    def timestep(self):
+        #todo: # Get descisions for accelerations from brains
+
+        #todo: # Velocity verlet update for movements
+
+        #todo: # Check shark eats fish and update shark eating timer
+
+        #todo: # Check shark starvation
+
+        #todo: # Update timer: fish survival
 
     def set_videoutput(self, filename, fps=15, dpi=100):
-        if self.video_enabled:
+        if self.video_enabled :
             raise BaseException("confusing to call set_videoutput() multiple times")
 
-        self.video_enabled = True
+        self.video_enabled  = True
 
-        FFMpegWriter = manimation.writers['ffmpeg']
-        metadata = dict(title='Complex Systems hw1', artist='Matplotlib',
-                        comment='Beautiful video!')
+        FFMpeg_writer = manimation.writers['ffmpeg']
+        metadata = dict(title='Fish in a tank simulation', artist='SoCS: Group 19',
+                        comment='Very clever video if we may say so ourselves!')
 
-        self.writer = FFMpegWriter(fps=fps, metadata=metadata)
+        self.video_writer = FFMpeg_writer(fps=fps, metadata=metadata)
         self.fig = plt.figure()
 
-        self.plotTrees, = plt.plot([], [], 'go', ms=5)
-        self.plotFires, = plt.plot([], [], 'ro', ms=5)
+        self.plot_fishes, = plt.plot([], [], 'go', ms=5)
+        self.plot_sharks, = plt.plot([], [], 'ro', ms=5)
 
         self.video_filename = filename
         self.video_dpi = dpi
 
-        plt.xlim(-0.1, 1.1)
-        plt.ylim(-0.1, 1.1)
+        plt.xlim(-0.05, self.size_X*1.05)
+        plt.ylim(-0.05, self.size_Y*1.05)
 
-        title = self.__get_title_str()
+        title = "Aquarium"
         plt.title(title)
 
+    def run(self):
+        with self.video_writer.saving(self.fig, self.video_filename, self.video_dpi):
+            for i in range(100):
+                self.fishes += random(size=self.fishes.shape) * 0.01
+                self.sharks += random(size=self.sharks.shape)*0.01
+                self.__grab_Frame_()
+
+
+
     def __grab_Frame_(self):
-        size_inv = 1 / self.size
+        self.plot_fishes.set_data(self.fishes[:,0],self.fishes[:,1])
+        self.plot_sharks.set_data(self.sharks[:,0],self.sharks[:,1])
+        self.video_writer.grab_frame()
 
-        firePos = []
-        treePos = []
 
-        add_fire = firePos.append
-        add_tree = treePos.append
-        for i, j in loop_range:
-            if trees[i, j] == -1:
-                trees[i, j] = 0
-                add_fire([i * size_inv, j * size_inv])
-            elif trees[i, j] == 1:
-                add_tree([i * size_inv, j * size_inv])
 
-        if len(treePos) > 0:
-            treePos = np.array(treePos)
-            self.plotTrees.set_data(treePos[:, 0], treePos[:, 1])
-        else:
-            self.plotTrees.set_data([], [])
-
-        if len(firePos) > 0:
-            firePos = np.array(firePos)
-            self.plotFires.set_data(firePos[:, 0], firePos[:, 1])
-            self.writer.grab_frame()
-            self.writer.grab_frame()
-        else:
-            self.plotFires.set_data([], [])
-
-        self.writer.grab_frame()
+a = aquarium(10,1,1,1)
+a.set_videoutput("test.mp4")
+a.run()
