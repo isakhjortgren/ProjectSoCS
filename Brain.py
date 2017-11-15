@@ -18,4 +18,4 @@ class Brain(object):
             output_state = output_state / norm
         return output_state
 
-
+#ToDo Add function that sets weight with given input weights vector
