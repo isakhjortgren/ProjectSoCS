@@ -13,11 +13,9 @@ class Brain(object):
         hidden_state = np.tanh(np.dot(self.weights1, total_inputs))
         hidden_state = np.concatenate(hidden_state, [1])
         output_state = np.tanh(np.dot(self.weights2, hidden_state))
-        return output_state
-
-    def get_acceleration(self):
-        output_state = self.make_decision()
         norm = np.linalg.norm(output_state)
         if norm > 1:
-            output_state = output_state/norm
-        return self.maximum_acceleration * output_state
+            output_state = output_state / norm
+        return output_state
+
+
