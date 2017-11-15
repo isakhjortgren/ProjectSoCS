@@ -9,24 +9,80 @@ import matplotlib.animation as manimation
 
 
 class aquarium(object):
-    def __init__(self, fishes, sharks, size_X, size_Y):
+    def __init__(self, nbr_of_prey, nbr_of_pred, size_X, size_Y,max_speed_prey,max_speed_pred):
 
         #ToDo Init object variables
         self.video_enabled = False
         self.size_X = size_X
         self.size_Y = size_Y
 
+        self.eaten = 0
+        self.max_vel_prey = max_speed_prey
+        self.max_vel_pred = max_speed_pred
+
+        self.nbr_prey = nbr_of_prey
+        self.nbr_pred = nbr_of_pred
+
+        self.interval_prey = list(range(nbr_of_prey))
+        self.interval_pred = list(range(nbr_of_prey,nbr_of_prey+nbr_of_pred))
 
         #Randomly place fishes and sharks
-        self.fishes = np.matrix(random(size=(fishes,2)))*np.matrix([[size_X,0],[0,size_Y]])
-        self.sharks = np.matrix(random(size=(sharks,2)))*np.matrix([[size_X,0],[0,size_Y]])
+        self.fish_xy = np.matrix(random(size=(nbr_of_prey+nbr_of_pred,2)))\
+                       *np.matrix([[size_X,0],[0,size_Y]])
 
-    def timestep(self):
-        #todo: # Get descisions for accelerations from brains
+        # Velocities are zeros to start with
+        self.fish_vel = np.matrix(np.zeros(self.fish_xy.shape))
 
-        #todo: # Velocity verlet update for movements
+
+    def timestep(self,dt=1):
+        #todo: # Get descisions for accelerations from brains.
+        acc_fish = (random(self.fish_xy.shape) - 0.5) * 0.01
+        #TODO: CORRECT FOR ACCELERATION HERE or in brain?
+
+        # Integrate new position and velocity.
+        self.fish_xy += self.fish_vel*dt + 0.5*acc_fish*dt*dt
+        self.fish_vel += acc_fish*dt
+
+        # Correct for max velocities
+        vel_magnitudes = np.linalg.norm(self.fish_vel,axis=1)
+        for i in self.interval_prey:
+            if vel_magnitudes[i] > self.max_vel_prey:
+                self.fish_vel[i] = self.max_vel_prey * self.fish_vel[i] / vel_magnitudes[i]
+
+        for i in self.interval_pred:
+            if vel_magnitudes[i] > self.max_vel_pred:
+                self.fish_vel[i] = self.max_vel_pred * self.fish_vel[i] / vel_magnitudes[i]
+
+
+        #Correct for reflective boundary
+        for i in range(len(self.fish_xy)):
+            if self.fish_xy[i, 0] < 0:
+                self.fish_xy[i, 0] = 0
+                self.fish_vel[i,0] = 0
+            elif self.fish_xy[i, 0] > self.size_X:
+                self.fish_xy[i, 0] = self.size_X
+                self.fish_vel[i, 0] = 0
+            if self.fish_xy[i, 1] < 0:
+                self.fish_xy[i, 1] = 0
+                self.fish_vel[i, 1] = 0
+            elif self.fish_xy[i, 1] > self.size_Y:
+                self.fish_xy[i, 1] = self.size_Y
+                self.fish_vel[i, 1] = 0
+
+
 
         #todo: # Check shark eats fish and update shark eating timer
+        eat_radius = 0.08
+        for shark in self.interval_pred:
+            for prey in self.interval_prey:
+                if eat_radius > np.linalg.norm(self.fish_xy[shark,:]-self.fish_xy[prey,:]):
+                    self.eaten += 1
+                    self.fish_xy[prey, :] = np.zeros((1, 2))
+                    self.fish_vel[prey, :] = np.zeros((1, 2))
+
+
+        #todo: # Correct for collision
+
 
         #todo: # Check shark starvation
 
@@ -45,8 +101,12 @@ class aquarium(object):
         self.video_writer = FFMpeg_writer(fps=fps, metadata=metadata)
         self.fig = plt.figure()
 
-        self.plot_fishes, = plt.plot([], [], 'go', ms=5)
-        self.plot_sharks, = plt.plot([], [], 'ro', ms=5)
+        self.plot_ax = plt.gca()
+
+        self.plot_prey, = plt.plot([], [], 'go', ms=5)
+        self.plot_pred, = plt.plot([], [], 'ro', ms=5)
+        self.plot_text = self.plot_ax.text(0,0.9, "Fish eaten = "+str(self.eaten))
+
 
         self.video_filename = filename
         self.video_dpi = dpi
@@ -57,22 +117,22 @@ class aquarium(object):
         title = "Aquarium"
         plt.title(title)
 
-    def run(self):
+    def run(self,iterations):
         with self.video_writer.saving(self.fig, self.video_filename, self.video_dpi):
-            for i in range(100):
-                self.fishes += random(size=self.fishes.shape) * 0.01
-                self.sharks += random(size=self.sharks.shape)*0.01
+            for i in range(iterations):
+                self.timestep(1)
                 self.__grab_Frame_()
 
 
 
     def __grab_Frame_(self):
-        self.plot_fishes.set_data(self.fishes[:,0],self.fishes[:,1])
-        self.plot_sharks.set_data(self.sharks[:,0],self.sharks[:,1])
+        self.plot_prey.set_data(self.fish_xy[self.interval_prey,0], self.fish_xy[self.interval_prey,1])
+        self.plot_pred.set_data(self.fish_xy[self.interval_pred,0], self.fish_xy[self.interval_pred,1])
+        self.plot_text.set_text("Fish eaten = "+str(self.eaten))
         self.video_writer.grab_frame()
 
 
 
-a = aquarium(10,1,1,1)
+a = aquarium(10,3,1,1,0.01,2)
 a.set_videoutput("test.mp4")
-a.run()
+a.run(300)
