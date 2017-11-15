@@ -6,10 +6,10 @@ def RunSimulation(fish_array, shark_array=0):
     return 1/(np.linalg.norm(fish_array)+1)
 
 nbr_of_particles = 30
-nbr_of_iterations = 100
+nbr_of_iterations = 10000
 
-nbr_of_hidden_neurons = 10
-nbr_of_inputs = 10
+nbr_of_hidden_neurons = 1
+nbr_of_inputs = 2
 nbr_of_outputs = 2
 weight_range = 5
 maximum_velocity = 5
@@ -59,6 +59,8 @@ for i_iteration in range(nbr_of_iterations):
     velocity_matrix[velocity_matrix > maximum_velocity] = maximum_velocity
     velocity_matrix[velocity_matrix < -maximum_velocity] = -maximum_velocity
 
+    if inertia_weight > inertia_weight_lower_bound:
+        inertia_weight = inertia_weight * beta
 
 
 
