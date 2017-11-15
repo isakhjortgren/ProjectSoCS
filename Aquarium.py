@@ -48,11 +48,9 @@ class aquarium(object):
         for i in self.interval_prey:
             if vel_magnitudes[i] > self.max_vel_prey:
                 self.fish_vel[i] = self.max_vel_prey * self.fish_vel[i] / vel_magnitudes[i]
-
         for i in self.interval_pred:
             if vel_magnitudes[i] > self.max_vel_pred:
                 self.fish_vel[i] = self.max_vel_pred * self.fish_vel[i] / vel_magnitudes[i]
-
 
         #Correct for reflective boundary
         for i in range(len(self.fish_xy)):
@@ -70,14 +68,13 @@ class aquarium(object):
                 self.fish_vel[i, 1] = 0
 
 
-
         #todo: # Check shark eats fish and update shark eating timer
         eat_radius = 0.08
         for shark in self.interval_pred:
             for prey in self.interval_prey:
                 if eat_radius > np.linalg.norm(self.fish_xy[shark,:]-self.fish_xy[prey,:]):
                     self.eaten += 1
-                    self.fish_xy[prey, :] = np.zeros((1, 2))
+                    self.fish_xy[prey, :] = random((1, 2))
                     self.fish_vel[prey, :] = np.zeros((1, 2))
 
 
@@ -133,6 +130,6 @@ class aquarium(object):
 
 
 
-a = aquarium(10,3,1,1,0.01,2)
+a = aquarium(10,2,1,1,0.01,2)
 a.set_videoutput("test.mp4")
 a.run(300)
