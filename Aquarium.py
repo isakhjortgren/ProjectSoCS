@@ -55,7 +55,8 @@ class aquarium(object):
         self.acc_fish = np.matlib.zeros(self.fish_xy_start.shape)
 
     def neighbourhood(self, distances):
-        return 1
+        # TODO: Implement function!
+        return distances
 
     def calculate_inputs(self):
         
@@ -64,24 +65,19 @@ class aquarium(object):
 
         N = len(self.fish_xy)
 
-        N_prey = len(preys) -1 #Blir detta rätt?
-        N_pred = len(preds) -1 #Blir detta rätt?
+        inv_N_prey = 1/ (len(preys) -1)
+        inv_N_pred = 1/ (len(preds) -1)
 
-        inv_N_prey = 1/N_prey
-        inv_N_pred = 1/N_pred
+        return_matrix = np.zeros(( N, self.pred_brain.nbr_of_inputs))
 
-        intv = self.interval_prey # TODO: search-replace with "preys"
-        #
-
-
-        # Position differences
+        ## Differences ##
         x_diff = np.column_stack([self.fish_xy[:,0]]*N) - np.row_stack([self.fish_xy[:,0]]*N) 
         y_diff = np.column_stack([self.fish_xy[:,1]]*N) - np.row_stack([self.fish_xy[:,1]]*N) 
 
-        # Velocity differences
-        v_x_diff = np.column_stack([self.fish_vel[:,0]]*N) - np.row_stack([self.fish_vel[:,0]]*N) 
+        v_x_diff = np.column_stack([self.fish_vel[:,0]]*N) - np.row_stack([self.fish_vel[:,0]]*N)
         v_y_diff = np.column_stack([self.fish_vel[:,1]]*N) - np.row_stack([self.fish_vel[:,1]]*N) 
         
+        ## Derived matricis ##
         distances = np.sqrt(x_diff**2 + y_diff**2) + np.identity(N)
         inv_distances = 1/distances       
         neighbr_mat = self.neighbourhood(distances)
@@ -90,44 +86,32 @@ class aquarium(object):
         inv_vel_distances = 1/vel_distances
 
 
-        #Preys
-        prey_input = np.matlib.zeros(( self.nbr_prey, self.pred_brain.nbr_of_inputs))
-
-
-
-
-        # Prey to Prey: X center of mass 
-        prey_input[:,0] = inv_N_prey * np.sum( neighbr_mat[intv,intv] * inv_distances[intv,intv] * x_diff[intv,intv],axis=0)
+        # Prey to Prey: X & Y center of mass
+        temp_matrix = neighbr_mat[preys,preys] * inv_distances[preys,preys]
+        return_matrix[ preys,0] = inv_N_prey * np.sum( temp_matrix * x_diff[preys,preys],axis=0)
+        return_matrix[ preys,1] = inv_N_prey * np.sum( temp_matrix * y_diff[preys,preys],axis=0)
         
-        # Prey to Prey: Y center of mass 
-        prey_input[:,1] = inv_N_prey * np.sum( neighbr_mat[intv,intv] * inv_distances[intv,intv] * y_diff[intv,intv],axis=0)
-        
-        # Prey to prey: X velocity: 
-        prey_input[:,2] = inv_N_prey * np.sum( neighbr_mat[intv,intv] * inv_vel_distances[intv,intv] * v_x_diff[intv,intv],axis=0)
-        
-        # Prey to prey: Y velocity: 
-        prey_input[:,3] = inv_N_prey * np.sum( neighbr_mat[intv,intv] * inv_vel_distances[intv,intv] * v_y_diff[intv,intv],axis=0)
+        # Prey to prey: X & Y velocity:
+        temp_matrix = neighbr_mat[preys,preys] * inv_vel_distances[preys,preys]
+        return_matrix[ preys,2] = inv_N_prey * np.sum( temp_matrix * v_x_diff[preys,preys],axis=0)
+        return_matrix[ preys,3] = inv_N_prey * np.sum( temp_matrix * v_y_diff[preys,preys],axis=0)
 
-        # Pred to prey: X center mass
-                
+        #TODO: # Pred to prey: X & Y. center of mass
 
-        # Pred to prey: Y center mass
+
+        #TODO: # Pred to prey: X & Y. velocity
 
 
 
 
+        # Pred to Pred: X & Y center of mass
+        temp_matrix = neighbr_mat[preds,preds] * inv_distances[preds,preds]
+        return_matrix[preds,0] = N_inv * np.sum( temp_matrix * x_diff[preds,preds],axis=0)
+        return_matrix[preds,1] = N_inv * np.sum( temp_matrix * y_diff[preds,preds],axis=0)
 
+        # Pred to pred: X & Y velocity
 
-        pred_input = np.matlib.zeros(( self.nbr_prey, self.pred_brain.nbr_of_inputs))
-
-        # Pred to Pred: X center of mass 
-        intv = self.interval_pred # For readability
-        pred_input[:,0] = N_inv * np.sum( neighbr_mat[intv,intv] * inv_distances[intv,intv] * x_diff[intv,intv],axis=0)
-        
-        # Pred to Pred: Y center of mass 
-        intv = self.interval_pred # For readability
-        pred_input[:,1] = N_inv * np.sum( neighbr_mat[intv,intv] * inv_distances[intv,intv] * y_diff[intv,intv],axis=0)
-        
+        return return_matrix
 
 
 
