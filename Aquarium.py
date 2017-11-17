@@ -29,7 +29,7 @@ class aquarium(object):
 
         self.pred_brain = Brain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range) 
         self.prey_brain = Brain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range) 
-        
+
         self.eat_radius = eat_radius
 
         self.eaten = 0
@@ -54,8 +54,12 @@ class aquarium(object):
         self.fish_vel = np.matlib.zeros(fish_xy_start.shape)
         self.acc_fish = np.matlib.zeros(fish_xy_start.shape)
 
+    def neighbourhood(self, distances):
+        return 1
+
     def calculate_inputs(self):
         N = len(self.fish_xy)
+        N_inv = 1/N
         # Position differences
         x_diff = np.column_stack([self.fish_xy[:,0]]*N) - np.row_stack([self.fish_xy[:,0]]*N) 
         y_diff = np.column_stack([self.fish_xy[:,1]]*N) - np.row_stack([self.fish_xy[:,1]]*N) 
@@ -64,6 +68,40 @@ class aquarium(object):
         v_x_diff = np.column_stack([self.fish_vel[:,0]]*N) - np.row_stack([self.fish_vel[:,0]]*N) 
         v_y_diff = np.column_stack([self.fish_vel[:,1]]*N) - np.row_stack([self.fish_vel[:,1]]*N) 
         
+        distances = np.sqrt(x_diff**2 + y_diff**2) + np.identity(N)
+        inv_distances = 1/distances
+        neighbr_mat = self.neighbourhood(distances)
+
+        #Preys
+        prey_input = np.matlib.zeros(( self.nbr_prey, self.pred_brain.nbr_of_inputs))
+        
+        
+        # Prey to Prey: X center of mass 
+        intv = self.interval_prey # For readability
+        prey_input[:,0] = N_inv * np.sum( neighbr_mat[intv,intv] * inv_distances[intv,intv] * x_diff[intv,intv],axis=0)
+        
+        # Prey to Prey: Y center of mass 
+        intv = self.interval_prey # For readability
+        prey_input[:,1] = N_inv * np.sum( neighbr_mat[intv,intv] * inv_distances[intv,intv] * y_diff[intv,intv],axis=0)
+        
+
+
+
+
+
+
+
+        pred_input = np.matlib.zeros(( self.nbr_prey, self.pred_brain.nbr_of_inputs))
+
+        # Pred to Pred: X center of mass 
+        intv = self.interval_pred # For readability
+        pred_input[:,0] = N_inv * np.sum( neighbr_mat[intv,intv] * inv_distances[intv,intv] * x_diff[intv,intv],axis=0)
+        
+        # Pred to Pred: Y center of mass 
+        intv = self.interval_pred # For readability
+        pred_input[:,1] = N_inv * np.sum( neighbr_mat[intv,intv] * inv_distances[intv,intv] * y_diff[intv,intv],axis=0)
+        
+
 
 
     def timestep(self,dt):
@@ -168,7 +206,7 @@ class aquarium(object):
         title = "Aquarium"
         plt.title(title)
 
-    def run_simulation():
+    def run_simulation(self):
 
         dt = 1 #todo: calculate dt from max vel and acc. hashtag physics
         time = 0
