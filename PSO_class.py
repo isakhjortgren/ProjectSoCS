@@ -12,7 +12,11 @@ class PSO(object):
         self.nbr_of_outputs = 2
         self.weight_range = 5
 
-        self.aquarium_parameters = {'nbr_of_prey': 10, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1,
+        self.aquarium_parameters = {'nbr_of_prey': 10, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1, 'max_speed_prey': 0.01,
+                              'max_speed_pred': 0.1, 'max_acc_prey': 0.1, 'max_acc_pred': 0.1, 'eat_radius': 0.1,
+                              'weight_range': self.weight_range, 'nbr_of_hidden_neurons': self.nbr_of_hidden_neurons, 'nbr_of_inputs': self.nbr_of_inputs, 'nbr_of_outputs': self.nbr_of_outputs}
+
+        self.aquarium_parameters_old = {'nbr_of_prey': 10, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1,
                                     'max_speed_prey': 0.01, 'max_speed_pred': 0.1, 'nbr_of_iterations': 100,
                                     'maximum_acceleration': 1, 'nbr_of_hidden_neurons': self.nbr_of_hidden_neurons,
                                     'nbr_of_inputs': self.nbr_of_inputs, 'nbr_of_outputs': self.nbr_of_outputs,
@@ -24,7 +28,7 @@ class PSO(object):
 
         # PSO parameters
         self.nbr_of_particles = 30
-        self.nbr_of_iterations = 10000
+        self.nbr_of_iterations = 1000
         self.maximum_velocity = 5
         self.c1 = 2
         self.c2 = 2
@@ -48,7 +52,7 @@ class PSO(object):
         self.nbr_of_aquariums = nbr_of_aquariums
         self.list_of_aquarium = list()
         for i in range(self.nbr_of_aquariums):
-            self.list_of_aquarium.append(aquarium(self.aquarium_parameters))
+            self.list_of_aquarium.append(aquarium(**self.aquarium_parameters))
 
     def update_brain(self, pred_or_prey, array):
         if pred_or_prey == 'prey':

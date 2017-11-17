@@ -23,6 +23,7 @@ class aquarium(object):
 
 
         #ToDo Init object variables
+        self.record_video = False
         self.video_enabled = False
         self.size_X = size_X
         self.size_Y = size_Y
@@ -75,11 +76,11 @@ class aquarium(object):
         
         ## Derived matricis ##
         distances = np.sqrt(x_diff**2 + y_diff**2) + np.identity(N)
-        inv_distances = 1/distances       
+        inv_distances = 1/(distances+0.000001)
         neighbr_mat = self.neighbourhood(distances)
 
         vel_distances = np.sqrt(v_x_diff**2 + v_y_diff**2) + np.identity(N)
-        inv_vel_distances = 1/vel_distances
+        inv_vel_distances = 1/(vel_distances+0.000001)
 
         ## PREYS ##
         # Prey to Prey: X & Y center of mass
@@ -239,13 +240,16 @@ class aquarium(object):
         self.fish_vel.fill(0)
         self.acc_fish.fill(0)
 
-
-        with self.video_writer.saving(self.fig, self.video_filename, self.video_dpi):
-            #TODO: Decide max_iterations
+        if self.record_video:
+            with self.video_writer.saving(self.fig, self.video_filename, self.video_dpi):
+                #TODO: Decide max_iterations
+                while time < MAX_TIME and self.eaten <= HALF_NBR_FISHES:
+                    self.timestep(dt)
+                    self.__grab_Frame_()
+                    time += dt
+        else:
             while time < MAX_TIME and self.eaten <= HALF_NBR_FISHES:
                 self.timestep(dt)
-                self.__grab_Frame_()
-
                 time += dt
 
         score = self.eaten/time
@@ -260,12 +264,13 @@ class aquarium(object):
 
 
 #raise NotImplementedError("Sorry, ledsen, förlåt: Vi gick hem trots ofärdig kod.")
+if __name__ == '__main__':
 
-aquarium_paramters = {'nbr_of_prey': 10, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1, 'max_speed_prey': 0.01,
-                      'max_speed_pred': 0.1,'max_acc_prey':0.1, 'max_acc_pred':0.1, 'eat_radius':0.1, 'weight_range':5,
-                      'nbr_of_hidden_neurons': 10, 'nbr_of_inputs': 10,
-                      'nbr_of_outputs': 2}
+    aquarium_paramters = {'nbr_of_prey': 10, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1, 'max_speed_prey': 0.01,
+                          'max_speed_pred': 0.1, 'max_acc_prey': 0.1, 'max_acc_pred': 0.1, 'eat_radius': 0.1,
+                          'weight_range': 5, 'nbr_of_hidden_neurons': 10, 'nbr_of_inputs': 10, 'nbr_of_outputs': 2}
 
-a = aquarium(**aquarium_paramters)
-a.set_videoutput("test.mp4")
-a.run_simulation()
+    a = aquarium(**aquarium_paramters)
+    a.record_video = True
+    a.set_videoutput("test.mp4")
+    print(a.run_simulation())

@@ -8,6 +8,7 @@ pso.run_pso()
 
 aquarium_1 = aquarium(pso.aquarium_parameters)
 aquarium_1.pred_brain.update_brain(pso.swarm_best_position)
+aquarium_1.record_video = True
 
 
 
