@@ -50,9 +50,9 @@ class aquarium(object):
         self.fish_xy_start = np.matrix(random(size=(nbr_of_prey+nbr_of_pred,2)))\
                             *np.matrix([[size_X,0],[0,size_Y]])
         
-        self.fish_xy = np.matlib.zeros(fish_xy_start.shape)
-        self.fish_vel = np.matlib.zeros(fish_xy_start.shape)
-        self.acc_fish = np.matlib.zeros(fish_xy_start.shape)
+        self.fish_xy = np.matlib.zeros(self.fish_xy_start.shape)
+        self.fish_vel = np.matlib.zeros(self.fish_xy_start.shape)
+        self.acc_fish = np.matlib.zeros(self.fish_xy_start.shape)
 
     def neighbourhood(self, distances):
         return 1
@@ -134,7 +134,7 @@ class aquarium(object):
     def timestep(self,dt):
         #todo: # Get descisions for accelerations from brains.
         
-
+        acc_fish = np.zeros(len(self.interval_prey))
         for i in self.interval_prey:
 
             brain_args = {"mean_prey_pos":None,
@@ -142,7 +142,7 @@ class aquarium(object):
                           "mean_prey_vel":None,
                           "mean_predator_vel":None,
                           "rel_pos":None}
-            self.acc_fish[i] = self.prey_brain(**brain_args)
+            acc_fish[i] = np.random.rand()-0.5#self.prey_brain(**brain_args)
         
 
 
@@ -158,7 +158,7 @@ class aquarium(object):
 
 
         # Integrate new position and velocity.
-        self.fish_xy += self.fish_vel*dt + 0.5*acc_fish*dt*dt
+        self.fish_xy += self.fish_vel*dt + 0.5*self.acc_fish*dt*dt
         self.fish_vel += acc_fish*dt
 
         # Correct for max velocities
@@ -190,7 +190,7 @@ class aquarium(object):
 
         for shark in self.interval_pred:
             for prey in self.interval_prey:
-                if eat_radius > np.linalg.norm(self.fish_xy[shark,:]-self.fish_xy[prey,:]):
+                if self.eat_radius > np.linalg.norm(self.fish_xy[shark,:]-self.fish_xy[prey,:]):
                     self.eaten += 1
                     # TODO: REMOVE FISH FROM LIST 
                     self.fish_xy[prey, :] = random((1, 2))
@@ -235,7 +235,7 @@ class aquarium(object):
 
     def run_simulation(self):
 
-        dt = 1 #todo: calculate dt from max vel and acc. hashtag physics
+        dt = 0.1 #todo: calculate dt from max vel and acc. hashtag physics
         time = 0
         MAX_TIME = 20
         HALF_NBR_FISHES = self.nbr_prey // 2
@@ -248,7 +248,7 @@ class aquarium(object):
 
         with self.video_writer.saving(self.fig, self.video_filename, self.video_dpi):
             #TODO: Decide max_iterations
-            while time < MAX_TIME and self.eaten <= HALF_NBR_FISHES
+            while time < MAX_TIME and self.eaten <= HALF_NBR_FISHES:
                 self.timestep(dt)
                 self.__grab_Frame_()
 
@@ -265,8 +265,13 @@ class aquarium(object):
         self.video_writer.grab_frame()
 
 
-raise NotImplementedError("Sorry, ledsen, förlåt: Vi gick hem trots ofärdig kod.")
+#raise NotImplementedError("Sorry, ledsen, förlåt: Vi gick hem trots ofärdig kod.")
 
-a = aquarium(10,2,1,1,0.01,2)
+aquarium_paramters = {'nbr_of_prey': 10, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1, 'max_speed_prey': 0.01,
+                      'max_speed_pred': 0.1,'max_acc_prey':0.1, 'max_acc_pred':0.1, 'eat_radius':0.1, 'weight_range':5,
+                      'nbr_of_hidden_neurons': 10, 'nbr_of_inputs': 10,
+                      'nbr_of_outputs': 2}
+
+a = aquarium(**aquarium_paramters)
 a.set_videoutput("test.mp4")
-a.run(None)
+a.run_simulation()
