@@ -58,8 +58,22 @@ class aquarium(object):
         return 1
 
     def calculate_inputs(self):
+        
+        preys = self.interval_prey
+        preds = self.interval_pred
+
         N = len(self.fish_xy)
-        N_inv = 1/N
+
+        N_prey = len(preys) -1 #Blir detta rätt?
+        N_pred = len(preds) -1 #Blir detta rätt?
+
+        inv_N_prey = 1/N_prey
+        inv_N_pred = 1/N_pred
+
+        intv = self.interval_prey # TODO: search-replace with "preys"
+        #
+
+
         # Position differences
         x_diff = np.column_stack([self.fish_xy[:,0]]*N) - np.row_stack([self.fish_xy[:,0]]*N) 
         y_diff = np.column_stack([self.fish_xy[:,1]]*N) - np.row_stack([self.fish_xy[:,1]]*N) 
@@ -69,22 +83,35 @@ class aquarium(object):
         v_y_diff = np.column_stack([self.fish_vel[:,1]]*N) - np.row_stack([self.fish_vel[:,1]]*N) 
         
         distances = np.sqrt(x_diff**2 + y_diff**2) + np.identity(N)
-        inv_distances = 1/distances
+        inv_distances = 1/distances       
         neighbr_mat = self.neighbourhood(distances)
+
+        vel_distances = np.sqrt(v_x_diff**2 + v_y_diff**2) + np.identity(N)
+        inv_vel_distances = 1/vel_distances
+
 
         #Preys
         prey_input = np.matlib.zeros(( self.nbr_prey, self.pred_brain.nbr_of_inputs))
-        
-        
+
+
+
+
         # Prey to Prey: X center of mass 
-        intv = self.interval_prey # For readability
-        prey_input[:,0] = N_inv * np.sum( neighbr_mat[intv,intv] * inv_distances[intv,intv] * x_diff[intv,intv],axis=0)
+        prey_input[:,0] = inv_N_prey * np.sum( neighbr_mat[intv,intv] * inv_distances[intv,intv] * x_diff[intv,intv],axis=0)
         
         # Prey to Prey: Y center of mass 
-        intv = self.interval_prey # For readability
-        prey_input[:,1] = N_inv * np.sum( neighbr_mat[intv,intv] * inv_distances[intv,intv] * y_diff[intv,intv],axis=0)
+        prey_input[:,1] = inv_N_prey * np.sum( neighbr_mat[intv,intv] * inv_distances[intv,intv] * y_diff[intv,intv],axis=0)
         
+        # Prey to prey: X velocity: 
+        prey_input[:,2] = inv_N_prey * np.sum( neighbr_mat[intv,intv] * inv_vel_distances[intv,intv] * v_x_diff[intv,intv],axis=0)
+        
+        # Prey to prey: Y velocity: 
+        prey_input[:,3] = inv_N_prey * np.sum( neighbr_mat[intv,intv] * inv_vel_distances[intv,intv] * v_y_diff[intv,intv],axis=0)
 
+        # Pred to prey: X center mass
+                
+
+        # Pred to prey: Y center mass
 
 
 
