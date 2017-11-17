@@ -54,6 +54,18 @@ class aquarium(object):
         self.fish_vel = np.matlib.zeros(fish_xy_start.shape)
         self.acc_fish = np.matlib.zeros(fish_xy_start.shape)
 
+    def calculate_inputs(self):
+        N = len(fish_xy)
+        # Position differences
+        x_diff = np.column_stack([self.fish_xy[:,0]]*N) - np.row_stack([self.fish_xy[:,0]]*N) 
+        y_diff = np.column_stack([self.fish_xy[:,1]]*N) - np.row_stack([self.fish_xy[:,1]]*N) 
+
+        # Velocity differences
+        v_x_diff = np.column_stack([self.fish_vel[:,0]]*N) - np.row_stack([self.fish_vel[:,0]]*N) 
+        v_y_diff = np.column_stack([self.fish_vel[:,1]]*N) - np.row_stack([self.fish_vel[:,1]]*N) 
+        
+        
+
     def timestep(self,dt):
         #todo: # Get descisions for accelerations from brains.
         
@@ -66,9 +78,9 @@ class aquarium(object):
                           "mean_predator_vel":None,
                           "rel_pos":None}
             self.acc_fish[i] = self.prey_brain(**brain_args)
+        
 
-        # Todo: Write function to calculated weighted positions and velocities
-        acc_fish = (random(self.fish_xy.shape) - 0.5) * 0.01
+
 
         #Normalize to max_acceleration for prey and fish
         acc_magnitudes = np.linalg.norm(self.acc_fish,axis=1)
