@@ -43,8 +43,8 @@ class aquarium(object):
         self.nbr_prey = nbr_of_prey
         self.nbr_pred = nbr_of_pred
 
-        self.interval_prey = list(range(nbr_of_prey))
-        self.interval_pred = list(range(nbr_of_prey,nbr_of_prey+nbr_of_pred))
+        self.interval_prey = list(range(nbr_of_pred))
+        self.interval_pred = list(range(nbr_of_pred,nbr_of_prey+nbr_of_pred))
 
         #Constant
         self.fish_xy_start = np.matrix(random(size=(nbr_of_prey+nbr_of_pred,2)))\
@@ -55,7 +55,7 @@ class aquarium(object):
         self.acc_fish = np.matlib.zeros(fish_xy_start.shape)
 
     def calculate_inputs(self):
-        N = len(fish_xy)
+        N = len(self.fish_xy)
         # Position differences
         x_diff = np.column_stack([self.fish_xy[:,0]]*N) - np.row_stack([self.fish_xy[:,0]]*N) 
         y_diff = np.column_stack([self.fish_xy[:,1]]*N) - np.row_stack([self.fish_xy[:,1]]*N) 
@@ -64,7 +64,7 @@ class aquarium(object):
         v_x_diff = np.column_stack([self.fish_vel[:,0]]*N) - np.row_stack([self.fish_vel[:,0]]*N) 
         v_y_diff = np.column_stack([self.fish_vel[:,1]]*N) - np.row_stack([self.fish_vel[:,1]]*N) 
         
-        
+
 
     def timestep(self,dt):
         #todo: # Get descisions for accelerations from brains.
@@ -127,6 +127,7 @@ class aquarium(object):
             for prey in self.interval_prey:
                 if eat_radius > np.linalg.norm(self.fish_xy[shark,:]-self.fish_xy[prey,:]):
                     self.eaten += 1
+                    # TODO: REMOVE FISH FROM LIST 
                     self.fish_xy[prey, :] = random((1, 2))
                     self.fish_vel[prey, :] = np.zeros((1, 2))
 
