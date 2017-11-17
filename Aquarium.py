@@ -14,7 +14,7 @@ from Brain import Brain
 class aquarium(object):
     # TODO:
     #  - kill simulations with useless sharks (For future!)
-    #  - calculate dt with respect to max_acc and max_vel
+    #  - calculate dt with respect to eat_radius and max_speeds
 
     def __init__(self, nbr_of_prey, nbr_of_pred, size_X, size_Y,
                  max_speed_prey,max_speed_pred,max_acc_prey,max_acc_pred, 
@@ -40,9 +40,6 @@ class aquarium(object):
         self.max_acc_prey = max_acc_prey
         self.max_acc_pred = max_acc_pred
 
-        self.nbr_prey = nbr_of_prey
-        self.nbr_pred = nbr_of_pred
-
         self.interval_prey = list(range(nbr_of_pred))
         self.interval_pred = list(range(nbr_of_pred,nbr_of_prey+nbr_of_pred))
 
@@ -59,7 +56,6 @@ class aquarium(object):
         return distances
 
     def calculate_inputs(self):
-        
         preys = self.interval_prey
         preds = self.interval_pred
 
@@ -85,7 +81,7 @@ class aquarium(object):
         vel_distances = np.sqrt(v_x_diff**2 + v_y_diff**2) + np.identity(N)
         inv_vel_distances = 1/vel_distances
 
-
+        ## PREYS ##
         # Prey to Prey: X & Y center of mass
         temp_matrix = neighbr_mat[preys,preys] * inv_distances[preys,preys]
         return_matrix[ preys,0] = inv_N_prey * np.sum( temp_matrix * x_diff[preys,preys],axis=0)
@@ -96,20 +92,35 @@ class aquarium(object):
         return_matrix[ preys,2] = inv_N_prey * np.sum( temp_matrix * v_x_diff[preys,preys],axis=0)
         return_matrix[ preys,3] = inv_N_prey * np.sum( temp_matrix * v_y_diff[preys,preys],axis=0)
 
-        #TODO: # Pred to prey: X & Y. center of mass
+        ##TODO: # Prey-Pred: X & Y. center of mass
+        #return_matrix[preys, 4] =
+        #return_matrix[preys, 5] =
+        ##TODO: # Prey-Pred: X & Y. velocity
+        #return_matrix[preys, 6] =
+        #return_matrix[preys, 7] =
 
+        ## PREDETORS ##
+        # Pred-Pred: X & Y center of mass
+        temp_matrix = neighbr_mat[preds, preds] * inv_distances[preds, preds]
+        return_matrix[preds, 0] = inv_N_pred * np.sum(temp_matrix * x_diff[preds, preds], axis=0)
+        return_matrix[preds, 1] = inv_N_pred * np.sum(temp_matrix * y_diff[preds, preds], axis=0)
 
-        #TODO: # Pred to prey: X & Y. velocity
+        # Pred-Pred: X & Y velocity
+        temp_matrix = neighbr_mat[preds, preds] * inv_vel_distances[preds, preds]
+        return_matrix[preds, 2] = inv_N_pred * np.sum(temp_matrix * v_x_diff[preds, preds], axis=0)
+        return_matrix[preds, 3] = inv_N_pred * np.sum(temp_matrix * v_y_diff[preds, preds], axis=0)
 
+        # TODO: # Pred-Prey: X & Y. center of mass
+        # return_matrix[preys, 4] =
+        # return_matrix[preys, 5] =
 
+        # TODO: # Pred-Prey: X & Y. velocity
+        # return_matrix[preys, 6] =
+        # return_matrix[preys, 7] =
 
-
-        # Pred to Pred: X & Y center of mass
-        temp_matrix = neighbr_mat[preds,preds] * inv_distances[preds,preds]
-        return_matrix[preds,0] = N_inv * np.sum( temp_matrix * x_diff[preds,preds],axis=0)
-        return_matrix[preds,1] = N_inv * np.sum( temp_matrix * y_diff[preds,preds],axis=0)
-
-        # Pred to pred: X & Y velocity
+        # TODO: Relative position to wall. X & Y. [-1, 1]
+        # return_matrix[:, 8] =
+        # return_matrix[:, 9] =
 
         return return_matrix
 
@@ -118,47 +129,47 @@ class aquarium(object):
     def timestep(self,dt):
         #todo: # Get descisions for accelerations from brains.
         
-        acc_fish = np.zeros(len(self.interval_prey))
+        self.acc_fish.fill(0)
+        brain_input = self.calculate_inputs()
+
         for i in self.interval_prey:
+            # self.acc_fish[i] = np.random.rand()-0.5
+            acc_temp = self.prey_brain.make_decision(
+                                    mean_prey_pos =     brain_input[i,0:2],
+                                    mean_prey_vel =     brain_input[i,2:4],
+                                    mean_predator_pos = brain_input[i,4:6],
+                                    mean_predator_vel = brain_input[i,6:8],
+                                    rel_pos =           brain_input[i,8:10])
+            norm_acc = np.linalg.norm(acc_temp)
+            if norm_acc>1:
+                self.acc_fish[i] = self.max_vel_prey * acc_temp / norm_acc
+            else:
+                self.acc_fish[i] = self.max_vel_prey * acc_temp
 
-            brain_args = {"mean_prey_pos":None,
-                          "mean_predator_pos":None,
-                          "mean_prey_vel":None,
-                          "mean_predator_vel":None,
-                          "rel_pos":None}
-            acc_fish[i] = np.random.rand()-0.5#self.prey_brain(**brain_args)
-        
-
-
-
-        #Normalize to max_acceleration for prey and fish
-        acc_magnitudes = np.linalg.norm(self.acc_fish,axis=1)
-        for i in self.interval_prey:
-            if acc_magnitudes[i] > self.max_acc_prey:
-                acc_fish[i] = self.max_acc_prey * acc_fish[i] / acc_magnitudes[i]
         for i in self.interval_pred:
-            if acc_magnitudes[i] > self.max_acc_pred:
-                acc_fish[i] = self.max_acc_pred * acc_fish[i] / acc_magnitudes[i]
+            # self.acc_fish[i] = np.random.rand()-0.5
+            acc_temp = self.pred_brain.make_decision(
+                                    mean_predator_pos = brain_input[i, 0:2],
+                                    mean_predator_vel = brain_input[i, 2:4],
+                                    mean_prey_pos =     brain_input[i, 4:6],
+                                    mean_prey_vel =     brain_input[i, 6:8],
+                                    rel_pos =           brain_input[i, 8:10])
+            norm_acc = np.linalg.norm(acc_temp)
+            if norm_acc > 1:
+                self.acc_fish[i] = self.max_vel_pred * acc_temp / norm_acc
+            else:
+                self.acc_fish[i] = self.max_vel_pred * acc_temp
 
 
         # Integrate new position and velocity.
         self.fish_xy += self.fish_vel*dt + 0.5*self.acc_fish*dt*dt
-        self.fish_vel += acc_fish*dt
+        self.fish_vel += self.acc_fish*dt
 
-        # Correct for max velocities
-        vel_magnitudes = np.linalg.norm(self.fish_vel,axis=1)
-        for i in self.interval_prey:
-            if vel_magnitudes[i] > self.max_vel_prey:
-                self.fish_vel[i] = self.max_vel_prey * self.fish_vel[i] / vel_magnitudes[i]
-        for i in self.interval_pred:
-            if vel_magnitudes[i] > self.max_vel_pred:
-                self.fish_vel[i] = self.max_vel_pred * self.fish_vel[i] / vel_magnitudes[i]
-
-        #Correct for reflective boundary
+        # Correct for reflective boundary
         for i in range(len(self.fish_xy)):
             if self.fish_xy[i, 0] < 0:
                 self.fish_xy[i, 0] = 0
-                self.fish_vel[i,0] = 0
+                self.fish_vel[i, 0] = 0
             elif self.fish_xy[i, 0] > self.size_X:
                 self.fish_xy[i, 0] = self.size_X
                 self.fish_vel[i, 0] = 0
@@ -169,24 +180,31 @@ class aquarium(object):
                 self.fish_xy[i, 1] = self.size_Y
                 self.fish_vel[i, 1] = 0
 
+        # Correct for max velocities
+        vel_magnitudes = np.linalg.norm(self.fish_vel,axis=1)
+        for i in self.interval_prey:
+            if vel_magnitudes[i] > self.max_vel_prey:
+                self.fish_vel[i] = self.max_vel_prey * self.fish_vel[i] / vel_magnitudes[i]
+        for i in self.interval_pred:
+            if vel_magnitudes[i] > self.max_vel_pred:
+                self.fish_vel[i] = self.max_vel_pred * self.fish_vel[i] / vel_magnitudes[i]
 
-        #todo future: # Check shark eats fish and update shark eating timer
 
+        # Check shark eats fish
         for shark in self.interval_pred:
             for prey in self.interval_prey:
                 if self.eat_radius > np.linalg.norm(self.fish_xy[shark,:]-self.fish_xy[prey,:]):
                     self.eaten += 1
-                    # TODO: REMOVE FISH FROM LIST 
-                    self.fish_xy[prey, :] = random((1, 2))
-                    self.fish_vel[prey, :] = np.zeros((1, 2))
+                    self.fish_xy    = np.delete(self.fish_xy, fish, axis=0)
+                    self.fish_vel   = np.delete(self.fish_vel, fish, axis=0)
+                    self.acc_fish   = np.delete(self.acc_fish, fish, axis=0)
+                    self.interval_prey.pop()
+                    break #A shark can only eat one fish per time step.
 
 
-        #todo: # Correct for collision
+        #todo-future: # Correct for collision ???
 
 
-        #todo future: # Check shark starvation
-
-        #todo future: # Update timer: fish survival
 
     def set_videoutput(self, filename, fps=15, dpi=100):
         if self.video_enabled :
@@ -222,7 +240,7 @@ class aquarium(object):
         dt = 0.1 #todo: calculate dt from max vel and acc. hashtag physics
         time = 0
         MAX_TIME = 20
-        HALF_NBR_FISHES = self.nbr_prey // 2
+        HALF_NBR_FISHES = len(self.fish_xy_start) // 2
 
         self.fish_xy = np.copy(self.fish_xy_start )
         
