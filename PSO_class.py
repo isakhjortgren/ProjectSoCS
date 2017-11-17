@@ -4,7 +4,7 @@ from Aquarium import aquarium
 
 class PSO(object):
 
-    def __init__(self):
+    def __init__(self, train_prey = False):
         # aquarium parameters
         self.nbr_of_aquariums = 1
         self.nbr_of_hidden_neurons = 10
@@ -19,7 +19,7 @@ class PSO(object):
                                     'weight_range': self.weight_range}
 
 
-        self.train_prey = False
+        self.train_prey = train_prey
 
 
         # PSO parameters
@@ -50,15 +50,13 @@ class PSO(object):
         for i in range(self.nbr_of_aquariums):
             self.list_of_aquarium.append(aquarium(self.aquarium_parameters))
 
-    def set_brain(self, pred_or_prey, weights1, weights2):
+    def update_brain(self, pred_or_prey, array):
         if pred_or_prey == 'prey':
             for i_aquarium in self.list_of_aquarium:
-                i_aquarium.prey_brain.weights1 = weights1
-                i_aquarium.prey_brain.weights2 = weights2
+                i_aquarium.prey_brain.update_brain(array)
         elif pred_or_prey == 'pred':
             for i_aquarium in self.list_of_aquarium:
-                i_aquarium.pred_brain.weights1 = weights1
-                i_aquarium.pred_brain.weights2 = weights2
+                i_aquarium.pred_brain.update_brain(array)
 
     def run_pso(self):
         for i_iteration in range(self.nbr_of_iterations):

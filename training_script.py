@@ -1,7 +1,7 @@
 import pickle
 from PSO_class import PSO
 
-pso = PSO()
+pso = PSO(train_prey=False)
 
 pso.run_pso()
 
