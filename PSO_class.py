@@ -1,7 +1,6 @@
 import numpy as np
 import numpy.matlib as npml
 from Aquarium import aquarium
-from joblib import Parallel, delayed
 
 class PSO(object):
 
@@ -41,7 +40,7 @@ class PSO(object):
         self.swarm_best_position = None
         self.particle_best_value = np.zeros(self.nbr_of_particles)
         self.particle_best_position = np.copy(self.positions_matrix)
-
+        self.list_of_swarm_best_value = list()
         self.list_of_aquarium = list()
         self.create_aquariums(self.nbr_of_aquariums)
 
@@ -85,6 +84,7 @@ class PSO(object):
 
             iteration_best = np.max(particle_values)
             if iteration_best > self.swarm_best_value:
+                self.list_of_swarm_best_value.append(iteration_best)
                 self.swarm_best_value = iteration_best
                 self.swarm_best_position = self.positions_matrix[np.argmax(particle_values), :]
 
