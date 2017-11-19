@@ -102,34 +102,41 @@ class aquarium(object):
         return_matrix[ UFV:,3] = semi_UFV * np.sum( temp_matrix * v_y_diff[UFV:,UFV:],axis=0)
 
         ##TODO: # Prey-Pred: X & Y. center of mass
-        #return_matrix[UFV:, 4] =
-        #return_matrix[UFV:, 5] =
+        temp_matrix = neighbr_mat[:UFV,UFV:] * inv_distances[:UFV,UFV:]
+        return_matrix[UFV:, 4] = (1/UFV) * np.sum( temp_matrix * x_diff[:UFV,UFV:],axis=0)
+        return_matrix[UFV:, 5] = (1/UFV) * np.sum( temp_matrix * y_diff[:UFV,UFV:],axis=0)
+        
         ##TODO: # Prey-Pred: X & Y. velocity
-        #return_matrix[UFV:, 6] =
-        #return_matrix[UFV:, 7] =
+        temp_matrix = neighbr_mat[:UFV,UFV:] * inv_vel_distances[:UFV,UFV:]
+        return_matrix[UFV:, 6] = (1/UFV) * np.sum( temp_matrix * v_x_diff[:UFV,UFV:],axis=0)
+        return_matrix[UFV:, 7] = (1/UFV) * np.sum( temp_matrix * v_y_diff[:UFV,UFV:],axis=0)
+
+        
 
         ## PREDETORS ##
         # Pred-Pred: X & Y center of mass
         temp_matrix = neighbr_mat[:UFV, :UFV] * inv_distances[:UFV, :UFV]
-        return_matrix[:UFV, 0] = np.mean(temp_matrix * x_diff[:UFV, :UFV], axis=0)
-        return_matrix[:UFV, 1] = np.mean(temp_matrix * y_diff[:UFV, :UFV], axis=0)
+        return_matrix[:UFV, 0] = (1/UFV) * np.sum(temp_matrix * x_diff[:UFV, :UFV], axis=0)
+        return_matrix[:UFV, 1] = (1/UFV) * np.sum(temp_matrix * y_diff[:UFV, :UFV], axis=0)
 
         # Pred-Pred: X & Y velocity
         temp_matrix = neighbr_mat[:UFV, :UFV] * inv_vel_distances[:UFV, :UFV]
-        return_matrix[:UFV, 2] = np.mean(temp_matrix * v_x_diff[:UFV, :UFV], axis=0)
-        return_matrix[:UFV, 3] = np.mean(temp_matrix * v_y_diff[:UFV, :UFV], axis=0)
+        return_matrix[:UFV, 2] = (1/UFV) * np.sum(temp_matrix * v_x_diff[:UFV, :UFV], axis=0)
+        return_matrix[:UFV, 3] = (1/UFV) * np.sum(temp_matrix * v_y_diff[:UFV, :UFV], axis=0)
 
         # TODO: # Pred-Prey: X & Y. center of mass
-        # return_matrix[UFV:, 4] =
-        # return_matrix[UFV:, 5] =
+        temp_matrix = neighbr_mat[UFV:, :UFV] * inv_distances[UFV:, :UFV]
+        return_matrix[:UFV, 4] = semi_UFV * np.sum(temp_matrix * x_diff[UFV:, :UFV], axis=0)
+        return_matrix[:UFV, 5] = semi_UFV * np.sum(temp_matrix * y_diff[UFV:, :UFV], axis=0)
 
         # TODO: # Pred-Prey: X & Y. velocity
-        # return_matrix[UFV:, 6] =
-        # return_matrix[UFV:, 7] =
+        temp_matrix = neighbr_mat[UFV:, :UFV] * inv_vel_distances[UFV:, :UFV]
+        return_matrix[:UFV, 6] = semi_UFV * np.sum(temp_matrix * v_x_diff[UFV:, :UFV], axis=0)
+        return_matrix[:UFV, 7] = semi_UFV * np.sum(temp_matrix * v_y_diff[UFV:, :UFV], axis=0)
 
         # TODO: Relative position to wall. X & Y. [-1, 1]
-        # return_matrix[:, 8] =
-        # return_matrix[:, 9] =
+        return_matrix[:, 8] = 2*self.fish_xy[:,0]/self.size_X-1
+        return_matrix[:, 9] = 2*self.fish_xy[:,1]/self.size_Y-1
 
         return return_matrix
 
@@ -297,5 +304,5 @@ if __name__ == '__main__':
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_paramters)
-    a.set_videoutput('test.mp4')
+#    a.set_videoutput('test.mp4')
     print(a.run_simulation())
