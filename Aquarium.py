@@ -60,7 +60,7 @@ class aquarium(object):
 
     def neighbourhood(self, distances):
         # TODO: Implement function!
-        return distances
+        return distances*0.4
 
     def calculate_inputs_NON_UFV(self):
         preys = self.interval_prey
@@ -335,7 +335,7 @@ class aquarium(object):
         self.interval_pred = list(range(self.nbr_of_pred))
         self.interval_prey = list(range(self.nbr_of_pred, self.nbr_of_prey+self.nbr_of_pred))
 
-        if self.record_video:
+        if self.video_enabled:
             with self.video_writer.saving(self.fig, self.video_filename, self.video_dpi):
                 #TODO: Decide max_iterations
                 while time < MAX_TIME and self.eaten <= HALF_NBR_FISHES:
@@ -357,7 +357,6 @@ class aquarium(object):
 
         x_data = [self.fish_xy[0, 0], self.fish_xy[0, 0] + self.brain_input[0, 0]]
         y_data = [self.fish_xy[0, 1], self.fish_xy[0, 1] + self.brain_input[0, 1]]
-        print(x_data, y_data)
 
         self.plot_pred_arrow.set_data(x_data, y_data)
 
@@ -374,4 +373,5 @@ if __name__ == '__main__':
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_paramters)
+    a.set_videoutput('test.mp4')
     print(a.run_simulation())
