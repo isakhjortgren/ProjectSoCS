@@ -247,7 +247,7 @@ class aquarium(object):
         self.acc_fish = np.zeros(self.fish_xy_start.shape)
 
         self.interval_pred = list(range(self.nbr_of_pred))
-        self.interval_prey = list(range(self.nbr_of_pred,self.nbr_of_prey+self.nbr_of_pred))
+        self.interval_prey = list(range(self.nbr_of_pred, self.nbr_of_prey+self.nbr_of_pred))
 
         if self.record_video:
             with self.video_writer.saving(self.fig, self.video_filename, self.video_dpi):
@@ -268,10 +268,9 @@ class aquarium(object):
     def __grab_Frame_(self):
         self.plot_prey.set_data(self.fish_xy[self.interval_prey,0], self.fish_xy[self.interval_prey,1])
         self.plot_pred.set_data(self.fish_xy[self.interval_pred,0], self.fish_xy[self.interval_pred,1])
-        
 
-        x_data = [self.fish_xy[0,0] , self.fish_xy[0,0] + self.brain_input[0,0]  ]
-        y_data = [self.fish_xy[0,1] , self.fish_xy[0,1] + self.brain_input[0,1]  ]        
+        x_data = [self.fish_xy[0, 0], self.fish_xy[0, 0] + self.brain_input[0, 0]]
+        y_data = [self.fish_xy[0, 1], self.fish_xy[0, 1] + self.brain_input[0, 1]]
         print(x_data, y_data)
         self.plot_pred_arrow.set_data(x_data, y_data)
 
