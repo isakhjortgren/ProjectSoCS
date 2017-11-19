@@ -33,24 +33,30 @@ class aquarium(object):
 
         self.eat_radius = eat_radius
 
-        self.eaten = 0
+        self.eaten = None 
         
+        self.nbr_of_prey = nbr_of_prey
+        self.nbr_of_pred = nbr_of_pred
+
         self.max_vel_prey = max_speed_prey
         self.max_vel_pred = max_speed_pred
         
         self.max_acc_prey = max_acc_prey
         self.max_acc_pred = max_acc_pred
 
-        self.interval_pred = list(range(nbr_of_pred))
-        self.interval_prey = list(range(nbr_of_pred,nbr_of_prey+nbr_of_pred))
+
 
         #Constant
         self.fish_xy_start = np.matrix(random(size=(nbr_of_prey+nbr_of_pred,2)))\
                             *np.matrix([[size_X,0],[0,size_Y]])
         
-        self.fish_xy = np.zeros(self.fish_xy_start.shape)
-        self.fish_vel = np.zeros(self.fish_xy_start.shape)
-        self.acc_fish = np.zeros(self.fish_xy_start.shape)
+        self.brain_input = None  #TODO: Only for debug purposes 
+        self.interval_pred = None
+        self.interval_prey = None
+
+        self.fish_xy = None
+        self.fish_vel = None
+        self.acc_fish = None
 
     def neighbourhood(self, distances):
         # TODO: Implement function!
@@ -70,6 +76,7 @@ class aquarium(object):
         ## Differences ##
         x_diff = np.column_stack([self.fish_xy[:,0]]*N) - np.row_stack([self.fish_xy[:,0]]*N) 
         y_diff = np.column_stack([self.fish_xy[:,1]]*N) - np.row_stack([self.fish_xy[:,1]]*N) 
+
 
         v_x_diff = np.column_stack([self.fish_vel[:,0]]*N) - np.row_stack([self.fish_vel[:,0]]*N)
         v_y_diff = np.column_stack([self.fish_vel[:,1]]*N) - np.row_stack([self.fish_vel[:,1]]*N)
@@ -126,13 +133,9 @@ class aquarium(object):
         return return_matrix
 
     def timestep(self,dt):
-        #todo: # Get descisions for accelerations from brains.
         
-        self.acc_fish.fill(0)
-        brain_input = self.calculate_inputs()
-
+        self.brain_input = self.calculate_inputs()
         for i in self.interval_prey:
-            # self.acc_fish[i] = np.random.rand()-0.5
             acc_temp = self.prey_brain.make_decision(brain_input[i,:])
             norm_acc = np.linalg.norm(acc_temp)
             if norm_acc>1:
@@ -141,7 +144,6 @@ class aquarium(object):
                 self.acc_fish[i] = self.max_vel_prey * acc_temp
 
         for i in self.interval_pred:
-            # self.acc_fish[i] = np.random.rand()-0.5
             acc_temp = self.pred_brain.make_decision(brain_input[i, :])
             norm_acc = np.linalg.norm(acc_temp)
             if norm_acc > 1:
@@ -188,9 +190,10 @@ class aquarium(object):
 
                 if self.eat_radius > np.linalg.norm(self.fish_xy[shark,:]-self.fish_xy[prey,:]):
                     self.eaten += 1
+                    
                     self.fish_xy    = np.delete(self.fish_xy, prey, axis=0)
                     self.fish_vel   = np.delete(self.fish_vel, prey, axis=0)
-                    self.acc_fish   = np.delete(self.acc_fish, prey, axis=0)
+                    self.acc_fish   = np.delete(self.acc_fish, prey, axis=0)                   
                     self.interval_prey.pop()
                     break #A shark can only eat one fish per time step.
 
@@ -218,6 +221,8 @@ class aquarium(object):
         self.plot_pred, = plt.plot([], [], 'ro', ms=5)
         self.plot_text = self.plot_ax.text(0,0.9, "Fish eaten = "+str(self.eaten))
 
+        self.plot_prey_arrow = plt.plot([], [], 'k-')
+        self.plot_pred_arrow = plt.plot([], [], 'k-')
 
         self.video_filename = filename
         self.video_dpi = dpi
@@ -236,9 +241,13 @@ class aquarium(object):
         HALF_NBR_FISHES = len(self.fish_xy_start) // 2
 
         self.fish_xy = np.copy(self.fish_xy_start )
-        
-        self.fish_vel.fill(0)
-        self.acc_fish.fill(0)
+
+        self.eaten = 0
+        self.fish_vel = np.zeros(self.fish_xy_start.shape)
+        self.acc_fish = np.zeros(self.fish_xy_start.shape)
+
+        self.interval_pred = list(range(self.nbr_of_pred))
+        self.interval_prey = list(range(self.nbr_of_pred,self.nbr_of_prey+self.nbr_of_pred))
 
         if self.record_video:
             with self.video_writer.saving(self.fig, self.video_filename, self.video_dpi):
@@ -259,6 +268,13 @@ class aquarium(object):
     def __grab_Frame_(self):
         self.plot_prey.set_data(self.fish_xy[self.interval_prey,0], self.fish_xy[self.interval_prey,1])
         self.plot_pred.set_data(self.fish_xy[self.interval_pred,0], self.fish_xy[self.interval_pred,1])
+        
+
+        x_data = [self.fish_xy[0,0] , self.fish_xy[0,0] + self.brain_input[0,0]  ]
+        y_data = [self.fish_xy[0,1] , self.fish_xy[0,1] + self.brain_input[0,1]  ]        
+        
+        self.plot_pred_arrow.set_data(x_data, y_data)
+
         self.plot_text.set_text("Fish eaten = "+str(self.eaten))
         self.video_writer.grab_frame()
 
