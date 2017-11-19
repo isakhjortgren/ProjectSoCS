@@ -62,25 +62,6 @@ class aquarium(object):
         # TODO: Implement function!
         return np.ones(distances.shape)*0.4
 
-    def calculate_inputs_dumb(self):
-        nbr_of_fishes = self.nbr_of_pred+self.nbr_of_pred
-        return_matrix = np.zeros(self.nbr_of_pred+self.nbr_of_pred, self.pred_brain.nbr_of_inputs)
-        for i_fish in range(nbr_of_fishes):
-            sum_x_pred = 0
-            sum_y_pred = 0
-            for j_pred in range(self.nbr_of_pred):
-                sum_x_pred += self.fish_xy[j_pred, 0] - self.fish_xy[i_fish, 0]
-                sum_y_pred += self.fish_xy[j_pred, 1] - self.fish_xy[i_fish, 1]
-
-
-            return_matrix[i_fish, 0] = sum_x_pred
-
-            for j_prey in range(self.nbr_of_prey):
-
-            return_matrix[i_fish, :] = #[x_pred_mean, y_pred_mean, x_prey_mean, y_prey_mean, 0 0 0 0]
-
-
-
     def calculate_inputs(self):
         
         UFV = self.interval_pred[-1] +1
@@ -95,18 +76,17 @@ class aquarium(object):
         x_diff = np.column_stack([self.fish_xy[:,0]]*N) - np.row_stack([self.fish_xy[:,0]]*N) 
         y_diff = np.column_stack([self.fish_xy[:,1]]*N) - np.row_stack([self.fish_xy[:,1]]*N) 
 
-        
 
         v_x_diff = np.column_stack([self.fish_vel[:,0]]*N) - np.row_stack([self.fish_vel[:,0]]*N)
         v_y_diff = np.column_stack([self.fish_vel[:,1]]*N) - np.row_stack([self.fish_vel[:,1]]*N)
         
         ## Derived matricis ##
         distances = np.sqrt(x_diff**2 + y_diff**2)
-        inv_distances = 1/(distances+0.000001)
+        inv_distances = 1/(distances+0.000000001)
         neighbr_mat = self.neighbourhood(distances)
 
         vel_distances = np.sqrt(v_x_diff**2 + v_y_diff**2)
-        inv_vel_distances = 1/(vel_distances+0.000001)
+        inv_vel_distances = 1/(vel_distances+0.000000001)
 
 
 
@@ -118,8 +98,8 @@ class aquarium(object):
         
         # Prey to prey: X & Y velocity:
         temp_matrix = neighbr_mat[UFV:,UFV:] * inv_vel_distances[UFV:,UFV:]
-        return_matrix[ UFV:,2] = np.mean( temp_matrix * v_x_diff[UFV:,UFV:],axis=0)
-        return_matrix[ UFV:,3] = np.mean( temp_matrix * v_y_diff[UFV:,UFV:],axis=0)
+        return_matrix[ UFV:,2] = semi_UFV * np.sum( temp_matrix * v_x_diff[UFV:,UFV:],axis=0)
+        return_matrix[ UFV:,3] = semi_UFV * np.sum( temp_matrix * v_y_diff[UFV:,UFV:],axis=0)
 
         ##TODO: # Prey-Pred: X & Y. center of mass
         #return_matrix[UFV:, 4] =
@@ -212,7 +192,6 @@ class aquarium(object):
 
                 if self.eat_radius > np.linalg.norm(self.fish_xy[shark,:]-self.fish_xy[prey,:]):
                     self.eaten += 1
-                    print("FEAST!")
                     self.fish_xy    = np.delete(self.fish_xy, prey, axis=0)
                     self.fish_vel   = np.delete(self.fish_vel, prey, axis=0)
                     self.acc_fish   = np.delete(self.acc_fish, prey, axis=0)                   
@@ -305,7 +284,6 @@ class aquarium(object):
         self.plot_prey_arrow.set_data(x_data_ff, y_data_ff)
         self.plot_pred_prey_arrow.set_data(x_data_sf, y_data_sf)
         self.plot_prey_pred_arrow.set_data(x_data_fs, y_data_fs)
-        print(np.linalg.norm(self.brain_input[2,0:2]))
         self.plot_text.set_text("Fish eaten = "+str(self.eaten))
         self.video_writer.grab_frame()
 
