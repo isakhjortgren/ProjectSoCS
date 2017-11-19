@@ -136,7 +136,7 @@ class aquarium(object):
         
         self.brain_input = self.calculate_inputs()
         for i in self.interval_prey:
-            acc_temp = self.prey_brain.make_decision(brain_input[i,:])
+            acc_temp = self.prey_brain.make_decision(self.brain_input[i,:])
             norm_acc = np.linalg.norm(acc_temp)
             if norm_acc>1:
                 self.acc_fish[i] = self.max_vel_prey * acc_temp / norm_acc
@@ -144,7 +144,7 @@ class aquarium(object):
                 self.acc_fish[i] = self.max_vel_prey * acc_temp
 
         for i in self.interval_pred:
-            acc_temp = self.pred_brain.make_decision(brain_input[i, :])
+            acc_temp = self.pred_brain.make_decision(self.brain_input[i, :])
             norm_acc = np.linalg.norm(acc_temp)
             if norm_acc > 1:
                 self.acc_fish[i] = self.max_vel_pred * acc_temp / norm_acc
@@ -221,8 +221,8 @@ class aquarium(object):
         self.plot_pred, = plt.plot([], [], 'ro', ms=5)
         self.plot_text = self.plot_ax.text(0,0.9, "Fish eaten = "+str(self.eaten))
 
-        self.plot_prey_arrow = plt.plot([], [], 'k-')
-        self.plot_pred_arrow = plt.plot([], [], 'k-')
+        self.plot_prey_arrow, = plt.plot([], [], 'k-')
+        self.plot_pred_arrow, = plt.plot([], [], 'k-')
 
         self.video_filename = filename
         self.video_dpi = dpi
@@ -272,7 +272,7 @@ class aquarium(object):
 
         x_data = [self.fish_xy[0,0] , self.fish_xy[0,0] + self.brain_input[0,0]  ]
         y_data = [self.fish_xy[0,1] , self.fish_xy[0,1] + self.brain_input[0,1]  ]        
-        
+        print(x_data, y_data)
         self.plot_pred_arrow.set_data(x_data, y_data)
 
         self.plot_text.set_text("Fish eaten = "+str(self.eaten))
