@@ -138,17 +138,17 @@ class aquarium(object):
             acc_temp = self.prey_brain.make_decision(self.brain_input[i,:])
             norm_acc = np.linalg.norm(acc_temp)
             if norm_acc>1:
-                self.acc_fish[i] = self.max_vel_prey * acc_temp / norm_acc
+                self.acc_fish[i] = self.max_acc_prey * acc_temp / norm_acc
             else:
-                self.acc_fish[i] = self.max_vel_prey * acc_temp
+                self.acc_fish[i] = self.max_acc_prey * acc_temp
 
         for i in self.interval_pred:
             acc_temp = self.pred_brain.make_decision(self.brain_input[i, :])
             norm_acc = np.linalg.norm(acc_temp)
             if norm_acc > 1:
-                self.acc_fish[i] = self.max_vel_pred * acc_temp / norm_acc
+                self.acc_fish[i] = self.max_acc_pred * acc_temp / norm_acc
             else:
-                self.acc_fish[i] = self.max_vel_pred * acc_temp
+                self.acc_fish[i] = self.max_acc_pred * acc_temp
 
 
         # Integrate new position and velocity.
@@ -220,6 +220,8 @@ class aquarium(object):
         self.plot_pred_arrow, = plt.plot([], [], 'k-')
         self.plot_prey_pred_arrow, = plt.plot([], [], 'g-')
         self.plot_pred_prey_arrow, = plt.plot([], [], 'r-')
+        self.plot_prey_acc_arrow, = plt.plot([], [], 'y-')
+        self.plot_pred_acc_arrow, = plt.plot([], [], 'o-')
 
         self.video_filename = filename
         self.video_dpi = dpi
@@ -273,11 +275,17 @@ class aquarium(object):
         y_data_fs = [self.fish_xy[2, 1], self.fish_xy[2, 1] + self.brain_input[2, 5]]
         x_data_sf = [self.fish_xy[0, 0], self.fish_xy[0, 0] + self.brain_input[0, 4]]
         y_data_sf = [self.fish_xy[0, 1], self.fish_xy[0, 1] + self.brain_input[0, 5]]
+        x_data_s_acc = [self.fish_xy[0, 0], self.fish_xy[0, 0] + self.acc_fish[0, 0]]
+        y_data_s_acc = [self.fish_xy[0, 1], self.fish_xy[0, 1] + self.acc_fish[0, 1]]
+        x_data_f_acc = [self.fish_xy[0, 0], self.fish_xy[0, 0] + self.acc_fish[2, 0]]
+        y_data_f_acc = [self.fish_xy[0, 1], self.fish_xy[0, 1] + self.acc_fish[2, 1]]
 
         self.plot_pred_arrow.set_data(x_data_ss, y_data_ss)
         self.plot_prey_arrow.set_data(x_data_ff, y_data_ff)
         self.plot_pred_prey_arrow.set_data(x_data_sf, y_data_sf)
         self.plot_prey_pred_arrow.set_data(x_data_fs, y_data_fs)
+        self.plot_pred_acc_arrow.set_data(x_data_s_acc, y_data_s_acc)
+        self.plot_prey_acc_arrow.set_data(x_data_f_acc, y_data_f_acc)
 
         #print(x_data_sf)
 
