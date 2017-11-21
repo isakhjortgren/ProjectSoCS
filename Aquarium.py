@@ -57,7 +57,7 @@ class aquarium(object):
         self.acc_fish = None
 
     def neighbourhood(self, distances):
-        return np.exp(distances**2/(2*self.visibility_range))
+        return np.exp(distances**2/(2*self.visibility_range**2))
 
     def calculate_inputs(self):
         
@@ -288,7 +288,8 @@ if __name__ == '__main__':
 
     aquarium_paramters = {'nbr_of_prey': 15, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1, 'max_speed_prey': 0.07,
                           'max_speed_pred': 0.1, 'max_acc_prey': 0.1, 'max_acc_pred': 0.1, 'eat_radius': 0.1,
-                          'weight_range': 5, 'nbr_of_hidden_neurons': 10, 'nbr_of_inputs': 10, 'nbr_of_outputs': 2}
+                          'weight_range': 5, 'nbr_of_hidden_neurons': 10, 'nbr_of_inputs': 10, 'nbr_of_outputs': 2,
+                          'visibility_range':0.5}
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_paramters)
