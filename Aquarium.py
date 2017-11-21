@@ -304,5 +304,5 @@ if __name__ == '__main__':
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_paramters)
-#    a.set_videoutput('test.mp4')
+    #a.set_videoutput('test.mp4')
     print(a.run_simulation())
