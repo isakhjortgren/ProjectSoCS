@@ -25,3 +25,9 @@ class Brain(object):
         self.weights1 = weight_array[0: number_weights1].reshape(self.nbr_of_hidden_neurons, self.nbr_of_inputs + 1)
         self.weights2 = weight_array[number_weights1:].reshape(self.nbr_of_outputs, self.nbr_of_hidden_neurons + 1)
 #ToDo Add function that sets weight with given input weights vector
+
+
+class randomBrain(Brain):
+    def make_decision(self, total_inputs):
+        return (np.random.random((1,2))-0.5)*2
+
