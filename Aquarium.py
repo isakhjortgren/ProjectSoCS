@@ -85,24 +85,24 @@ class aquarium(object):
 
         ## PREYS: ##
         # Prey to Prey: X & Y center of mass
-        temp_matrix = neighbr_mat[n_preds:,n_preds:] * inv_distances[n_preds:,n_preds:]
-        return_matrix[ n_preds:,0] = 1/(n_preys-1) * np.sum( temp_matrix * x_diff[n_preds:,n_preds:],axis=0)
-        return_matrix[ n_preds:,1] = 1/(n_preys-1) * np.sum( temp_matrix * y_diff[n_preds:,n_preds:],axis=0)
+        temp_matrix = neighbr_mat[n_preds:,n_preds:] * inv_distances[n_preds:, n_preds:]
+        return_matrix[ n_preds:,0] = 1/(n_preys-1) * np.sum(temp_matrix * x_diff[n_preds:, n_preds:], axis=0)
+        return_matrix[ n_preds:,1] = 1/(n_preys-1) * np.sum(temp_matrix * y_diff[n_preds:, n_preds:], axis=0)
         
         # Prey to prey: X & Y velocity:
-        temp_matrix = neighbr_mat[n_preds:,n_preds:] * inv_vel_distances[n_preds:,n_preds:]
-        return_matrix[ n_preds:,2] = 1/(n_preys-1) * np.sum( temp_matrix * v_x_diff[n_preds:,n_preds:],axis=0)
-        return_matrix[ n_preds:,3] = 1/(n_preys-1) * np.sum( temp_matrix * v_y_diff[n_preds:,n_preds:],axis=0)
+        temp_matrix = neighbr_mat[n_preds:,n_preds:] * inv_vel_distances[n_preds:, n_preds:]
+        return_matrix[ n_preds:,2] = 1/(n_preys-1) * np.sum(temp_matrix * v_x_diff[n_preds:, n_preds:], axis=0)
+        return_matrix[ n_preds:,3] = 1/(n_preys-1) * np.sum(temp_matrix * v_y_diff[n_preds:, n_preds:], axis=0)
 
         ##TODO: # Prey-Pred: X & Y. center of mass
-        temp_matrix = neighbr_mat[:n_preds,n_preds:] * inv_distances[:n_preds,n_preds:]
-        return_matrix[n_preds:, 4] = (1/n_preds) * np.sum( temp_matrix * x_diff[:n_preds,n_preds:],axis=0)
-        return_matrix[n_preds:, 5] = (1/n_preds) * np.sum( temp_matrix * y_diff[:n_preds,n_preds:],axis=0)
+        temp_matrix = neighbr_mat[:n_preds,n_preds:] * inv_distances[:n_preds, n_preds:]
+        return_matrix[n_preds:, 4] = (1/n_preds) * np.sum(temp_matrix * x_diff[:n_preds, n_preds:], axis=0)
+        return_matrix[n_preds:, 5] = (1/n_preds) * np.sum(temp_matrix * y_diff[:n_preds, n_preds:], axis=0)
         
         ##TODO: # Prey-Pred: X & Y. velocity
-        temp_matrix = neighbr_mat[:n_preds,n_preds:] * inv_vel_distances[:n_preds,n_preds:]
-        return_matrix[n_preds:, 6] = (1/n_preds) * np.sum( temp_matrix * v_x_diff[:n_preds,n_preds:],axis=0)
-        return_matrix[n_preds:, 7] = (1/n_preds) * np.sum( temp_matrix * v_y_diff[:n_preds,n_preds:],axis=0)
+        temp_matrix = neighbr_mat[:n_preds,n_preds:] * inv_vel_distances[:n_preds, n_preds:]
+        return_matrix[n_preds:, 6] = (1/n_preds) * np.sum(temp_matrix * v_x_diff[:n_preds, n_preds:], axis=0)
+        return_matrix[n_preds:, 7] = (1/n_preds) * np.sum(temp_matrix * v_y_diff[:n_preds, n_preds:], axis=0)
        
         ## PREDETORS ##
         # Pred-Pred: X & Y center of mass
