@@ -33,8 +33,6 @@ class aquarium(object):
 
         self.eat_radius = eat_radius
 
-        self.eaten = None 
-        
         self.nbr_of_prey = nbr_of_prey
         self.nbr_of_pred = nbr_of_pred
 
@@ -44,8 +42,6 @@ class aquarium(object):
         self.max_acc_prey = max_acc_prey
         self.max_acc_pred = max_acc_pred
 
-
-
         #Constant
         self.fish_xy_start = np.matrix(random(size=(nbr_of_prey+nbr_of_pred,2)))\
                             *np.matrix([[size_X,0],[0,size_Y]])
@@ -53,6 +49,7 @@ class aquarium(object):
         self.brain_input = None  #TODO: Only for debug purposes 
         self.interval_pred = None
         self.interval_prey = None
+        self.eaten = None 
 
         self.fish_xy = None
         self.fish_vel = None
@@ -60,22 +57,20 @@ class aquarium(object):
 
     def neighbourhood(self, distances):
         # TODO: Implement function!
-        return np.ones(distances.shape)*0.4
+        return np.ones(distances.shape)
 
     def calculate_inputs(self):
         
-        UFV = self.interval_pred[-1] +1
+        n_preds = self.interval_pred[-1] +1
+        n_preys = len(self.interval_prey)
 
-        N = len(self.fish_xy)
-
-        semi_UFV = 1/(len(self.interval_prey) -1)
+        N = len(self.fish_xy) # also equal to (n_preds + n_preys)
 
         return_matrix = np.zeros(( N, self.pred_brain.nbr_of_inputs))
 
         ## Differences ##
         x_diff = np.column_stack([self.fish_xy[:,0]]*N) - np.row_stack([self.fish_xy[:,0]]*N) 
         y_diff = np.column_stack([self.fish_xy[:,1]]*N) - np.row_stack([self.fish_xy[:,1]]*N) 
-
 
         v_x_diff = np.column_stack([self.fish_vel[:,0]]*N) - np.row_stack([self.fish_vel[:,0]]*N)
         v_y_diff = np.column_stack([self.fish_vel[:,1]]*N) - np.row_stack([self.fish_vel[:,1]]*N)
@@ -88,51 +83,47 @@ class aquarium(object):
         vel_distances = np.sqrt(v_x_diff**2 + v_y_diff**2)
         inv_vel_distances = 1/(vel_distances+0.000000001)
 
-
-
-        ## UFV: ##
+        ## PREYS: ##
         # Prey to Prey: X & Y center of mass
-        temp_matrix = neighbr_mat[UFV:,UFV:] * inv_distances[UFV:,UFV:]
-        return_matrix[ UFV:,0] = semi_UFV * np.sum( temp_matrix * x_diff[UFV:,UFV:],axis=0)
-        return_matrix[ UFV:,1] = semi_UFV * np.sum( temp_matrix * y_diff[UFV:,UFV:],axis=0)
+        temp_matrix = neighbr_mat[n_preds:,n_preds:] * inv_distances[n_preds:,n_preds:]
+        return_matrix[ n_preds:,0] = 1/(n_preys-1) * np.sum( temp_matrix * x_diff[n_preds:,n_preds:],axis=0)
+        return_matrix[ n_preds:,1] = 1/(n_preys-1) * np.sum( temp_matrix * y_diff[n_preds:,n_preds:],axis=0)
         
         # Prey to prey: X & Y velocity:
-        temp_matrix = neighbr_mat[UFV:,UFV:] * inv_vel_distances[UFV:,UFV:]
-        return_matrix[ UFV:,2] = semi_UFV * np.sum( temp_matrix * v_x_diff[UFV:,UFV:],axis=0)
-        return_matrix[ UFV:,3] = semi_UFV * np.sum( temp_matrix * v_y_diff[UFV:,UFV:],axis=0)
+        temp_matrix = neighbr_mat[n_preds:,n_preds:] * inv_vel_distances[n_preds:,n_preds:]
+        return_matrix[ n_preds:,2] = 1/(n_preys-1) * np.sum( temp_matrix * v_x_diff[n_preds:,n_preds:],axis=0)
+        return_matrix[ n_preds:,3] = 1/(n_preys-1) * np.sum( temp_matrix * v_y_diff[n_preds:,n_preds:],axis=0)
 
         ##TODO: # Prey-Pred: X & Y. center of mass
-        temp_matrix = neighbr_mat[:UFV,UFV:] * inv_distances[:UFV,UFV:]
-        return_matrix[UFV:, 4] = (1/UFV) * np.sum( temp_matrix * x_diff[:UFV,UFV:],axis=0)
-        return_matrix[UFV:, 5] = (1/UFV) * np.sum( temp_matrix * y_diff[:UFV,UFV:],axis=0)
+        temp_matrix = neighbr_mat[:n_preds,n_preds:] * inv_distances[:n_preds,n_preds:]
+        return_matrix[n_preds:, 4] = (1/n_preds) * np.sum( temp_matrix * x_diff[:n_preds,n_preds:],axis=0)
+        return_matrix[n_preds:, 5] = (1/n_preds) * np.sum( temp_matrix * y_diff[:n_preds,n_preds:],axis=0)
         
         ##TODO: # Prey-Pred: X & Y. velocity
-        temp_matrix = neighbr_mat[:UFV,UFV:] * inv_vel_distances[:UFV,UFV:]
-        return_matrix[UFV:, 6] = (1/UFV) * np.sum( temp_matrix * v_x_diff[:UFV,UFV:],axis=0)
-        return_matrix[UFV:, 7] = (1/UFV) * np.sum( temp_matrix * v_y_diff[:UFV,UFV:],axis=0)
-
-        
-
+        temp_matrix = neighbr_mat[:n_preds,n_preds:] * inv_vel_distances[:n_preds,n_preds:]
+        return_matrix[n_preds:, 6] = (1/n_preds) * np.sum( temp_matrix * v_x_diff[:n_preds,n_preds:],axis=0)
+        return_matrix[n_preds:, 7] = (1/n_preds) * np.sum( temp_matrix * v_y_diff[:n_preds,n_preds:],axis=0)
+       
         ## PREDETORS ##
         # Pred-Pred: X & Y center of mass
-        temp_matrix = neighbr_mat[:UFV, :UFV] * inv_distances[:UFV, :UFV]
-        return_matrix[:UFV, 0] = (1/UFV) * np.sum(temp_matrix * x_diff[:UFV, :UFV], axis=0)
-        return_matrix[:UFV, 1] = (1/UFV) * np.sum(temp_matrix * y_diff[:UFV, :UFV], axis=0)
+        temp_matrix = neighbr_mat[:n_preds, :n_preds] * inv_distances[:n_preds, :n_preds]
+        return_matrix[:n_preds, 0] = 1/(n_preds-1) * np.sum(temp_matrix * x_diff[:n_preds, :n_preds], axis=0)
+        return_matrix[:n_preds, 1] = 1/(n_preds-1) * np.sum(temp_matrix * y_diff[:n_preds, :n_preds], axis=0)
 
         # Pred-Pred: X & Y velocity
-        temp_matrix = neighbr_mat[:UFV, :UFV] * inv_vel_distances[:UFV, :UFV]
-        return_matrix[:UFV, 2] = (1/UFV) * np.sum(temp_matrix * v_x_diff[:UFV, :UFV], axis=0)
-        return_matrix[:UFV, 3] = (1/UFV) * np.sum(temp_matrix * v_y_diff[:UFV, :UFV], axis=0)
+        temp_matrix = neighbr_mat[:n_preds, :n_preds] * inv_vel_distances[:n_preds, :n_preds]
+        return_matrix[:n_preds, 2] = 1/(n_preds-1) * np.sum(temp_matrix * v_x_diff[:n_preds, :n_preds], axis=0)
+        return_matrix[:n_preds, 3] = 1/(n_preds-1) * np.sum(temp_matrix * v_y_diff[:n_preds, :n_preds], axis=0)
 
         # TODO: # Pred-Prey: X & Y. center of mass
-        temp_matrix = neighbr_mat[UFV:, :UFV] * inv_distances[UFV:, :UFV]
-        return_matrix[:UFV, 4] = semi_UFV * np.sum(temp_matrix * x_diff[UFV:, :UFV], axis=0)
-        return_matrix[:UFV, 5] = semi_UFV * np.sum(temp_matrix * y_diff[UFV:, :UFV], axis=0)
+        temp_matrix = neighbr_mat[n_preds:, :n_preds] * inv_distances[n_preds:, :n_preds]
+        return_matrix[:n_preds, 4] = 1/n_preys * np.sum(temp_matrix * x_diff[n_preds:, :n_preds], axis=0)
+        return_matrix[:n_preds, 5] = 1/n_preys * np.sum(temp_matrix * y_diff[n_preds:, :n_preds], axis=0)
 
         # TODO: # Pred-Prey: X & Y. velocity
-        temp_matrix = neighbr_mat[UFV:, :UFV] * inv_vel_distances[UFV:, :UFV]
-        return_matrix[:UFV, 6] = semi_UFV * np.sum(temp_matrix * v_x_diff[UFV:, :UFV], axis=0)
-        return_matrix[:UFV, 7] = semi_UFV * np.sum(temp_matrix * v_y_diff[UFV:, :UFV], axis=0)
+        temp_matrix = neighbr_mat[n_preds:, :n_preds] * inv_vel_distances[n_preds:, :n_preds]
+        return_matrix[:n_preds, 6] = 1/n_preys * np.sum(temp_matrix * v_x_diff[n_preds:, :n_preds], axis=0)
+        return_matrix[:n_preds, 7] = 1/n_preys * np.sum(temp_matrix * v_y_diff[n_preds:, :n_preds], axis=0)
 
         # TODO: Relative position to wall. X & Y. [-1, 1]
         return_matrix[:, 8] = 2*self.fish_xy[:,0]/self.size_X-1
@@ -205,10 +196,7 @@ class aquarium(object):
                     self.interval_prey.pop()
                     break #A shark can only eat one fish per time step.
 
-
         #todo-future: # Correct for collision ???
-
-
 
     def set_videoutput(self, filename, fps=15, dpi=100):
         if self.video_enabled :
