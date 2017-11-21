@@ -4,7 +4,7 @@ from Aquarium import aquarium
 
 class PSO(object):
 
-    def __init__(self, train_prey = False):
+    def __init__(self, train_prey=False):
         # aquarium parameters
         self.nbr_of_aquariums = 1
         self.nbr_of_hidden_neurons = 10
@@ -12,9 +12,11 @@ class PSO(object):
         self.nbr_of_outputs = 2
         self.weight_range = 5
 
-        self.aquarium_parameters = {'nbr_of_prey': 10, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1, 'max_speed_prey': 0.01,
-                              'max_speed_pred': 0.1, 'max_acc_prey': 0.1, 'max_acc_pred': 0.1, 'eat_radius': 0.1,
-                              'weight_range': self.weight_range, 'nbr_of_hidden_neurons': self.nbr_of_hidden_neurons, 'nbr_of_inputs': self.nbr_of_inputs, 'nbr_of_outputs': self.nbr_of_outputs}
+        self.aquarium_parameters = {'nbr_of_prey': 15, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1,
+                                   'max_speed_prey': 0.07, 'max_speed_pred': 0.1, 'max_acc_prey': 0.1,
+                                   'max_acc_pred': 0.1, 'eat_radius': 0.1, 'weight_range': 5,
+                                   'nbr_of_hidden_neurons': 10, 'nbr_of_inputs': 10, 'nbr_of_outputs': 2,
+                                   'visibility_range': 0.3}
 
         self.aquarium_parameters_old = {'nbr_of_prey': 10, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1,
                                     'max_speed_prey': 0.01, 'max_speed_pred': 0.1, 'nbr_of_iterations': 100,
@@ -22,13 +24,11 @@ class PSO(object):
                                     'nbr_of_inputs': self.nbr_of_inputs, 'nbr_of_outputs': self.nbr_of_outputs,
                                     'weight_range': self.weight_range}
 
-
         self.train_prey = train_prey
-
 
         # PSO parameters
         self.nbr_of_particles = 30
-        self.nbr_of_iterations = 1000
+        self.nbr_of_iterations = 30
         self.maximum_velocity = 5
         self.c1 = 2
         self.c2 = 2
@@ -64,6 +64,7 @@ class PSO(object):
 
     def run_pso(self):
         for i_iteration in range(self.nbr_of_iterations):
+            print(f'Epoch number {i_iteration} out of {self.nbr_of_iterations}')
 
             particle_values = np.zeros(self.nbr_of_particles)
             for i_particle in range(self.nbr_of_particles):
@@ -86,9 +87,9 @@ class PSO(object):
 
             iteration_best = np.max(particle_values)
             if iteration_best > self.swarm_best_value:
-                self.list_of_swarm_best_value.append(iteration_best)
                 self.swarm_best_value = iteration_best
                 self.swarm_best_position = self.positions_matrix[np.argmax(particle_values), :]
+            self.list_of_swarm_best_value.append(self.swarm_best_value)
 
             temp = particle_values > self.particle_best_value
             self.particle_best_value[temp] = particle_values[temp]
