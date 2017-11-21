@@ -1,12 +1,16 @@
 import numpy as np
 import numpy.matlib as npml
 from Aquarium import aquarium
+import multiprocessing
+from joblib import Parallel, delayed
+nrb_of_cores = multiprocessing.cpu_count()
+
 
 class PSO(object):
 
     def __init__(self, train_prey=False):
         # aquarium parameters
-        self.nbr_of_aquariums = 1
+        self.nbr_of_aquariums = 4
         self.nbr_of_hidden_neurons = 10
         self.nbr_of_inputs = 10
         self.nbr_of_outputs = 2
@@ -62,6 +66,19 @@ class PSO(object):
             for i_aquarium in self.list_of_aquarium:
                 i_aquarium.pred_brain.update_brain(array)
 
+    def run_one_aquarium(self, i_aquarium, array):
+        if self.train_prey:
+            i_aquarium.prey_brain.update_brain(array)
+        else:
+            i_aquarium.pred_brain.update_brain(array)
+
+        result_prey, result_pred = i_aquarium.run_simulation()
+
+        if self.train_prey:
+            return result_prey
+        else:
+            return result_pred
+
     def run_pso(self):
         for i_iteration in range(self.nbr_of_iterations):
             print(f'Epoch number {i_iteration} out of {self.nbr_of_iterations}')
@@ -69,19 +86,9 @@ class PSO(object):
             particle_values = np.zeros(self.nbr_of_particles)
             for i_particle in range(self.nbr_of_particles):
                 array = self.positions_matrix[i_particle, :]
-                list_of_result = list()
-                for i_aquarium in self.list_of_aquarium:
-                    if self.train_prey:
-                        i_aquarium.prey_brain.update_brain(array)
-                    else:
-                        i_aquarium.pred_brain.update_brain(array)
 
-                    result_prey, result_pred = i_aquarium.run_simulation()
-
-                    if self.train_prey:
-                        list_of_result.append(result_prey)
-                    else:
-                        list_of_result.append(result_pred)
+                list_of_result = Parallel(n_jobs=nrb_of_cores)(delayed(self.run_one_aquarium)(i_aquarium, array)
+                                                               for i_aquarium in self.list_of_aquarium)
 
                 particle_values[i_particle] = np.mean(list_of_result)
 
