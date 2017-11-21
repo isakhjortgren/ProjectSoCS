@@ -7,7 +7,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.animation as manimation
 
-from Brain import Brain
+from Brain import Brain, randomBrain
 
 
 class aquarium(object):
@@ -27,8 +27,9 @@ class aquarium(object):
         self.size_X = size_X
         self.size_Y = size_Y
 
-        self.pred_brain = Brain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range) 
-        self.prey_brain = Brain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range) 
+        self.pred_brain = randomBrain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
+        self.prey_brain = Brain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
+
 
         self.eat_radius = eat_radius
         self.visibility_range = visibility_range
