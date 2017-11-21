@@ -32,14 +32,14 @@ class aquarium(object):
         self.inputs = input_set
 
         if "prey" in rand_walk_brain_set:
-            self.pred_brain = randomBrain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
-        else: 
             self.pred_brain = Brain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
+        else: 
+            self.pred_brain = randomBrain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
         
         if "pred" in rand_walk_brain_set:
-            self.prey_brain = Brain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
-        else:
             self.prey_brain = randomBrain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
+        else:
+            self.prey_brain = Brain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
 
 
         self.eat_radius = eat_radius
@@ -53,8 +53,6 @@ class aquarium(object):
         
         self.max_acc_prey = max_acc_prey
         self.max_acc_pred = max_acc_pred
-
-
 
         #Constant
         self.fish_xy_start = np.matrix(random(size=(nbr_of_prey+nbr_of_pred,2)))\
@@ -121,11 +119,12 @@ class aquarium(object):
             return_matrix[ n_preds:,next_col] = 1/(n_preys-1) * np.sum(temp_matrix * v_x_diff[n_preds:, n_preds:], axis=0)
             return_matrix[ n_preds:,next_col+1] = 1/(n_preys-1) * np.sum(temp_matrix * v_y_diff[n_preds:, n_preds:], axis=0)
 
-            ##TODO: # Prey-Pred: X & Y. velocity
-            temp_matrix = neighbr_mat[:n_preds,n_preds:] * inv_vel_distances[:n_preds, n_preds:]
-            return_matrix[n_preds:, next_col] = (1/n_preds) * np.sum(temp_matrix * v_x_diff[:n_preds, n_preds:], axis=0)
-            return_matrix[n_preds:, next_col+1] = (1/n_preds) * np.sum(temp_matrix * v_y_diff[:n_preds, n_preds:], axis=0)
-        
+            # Pred-Pred: X & Y velocity
+            temp_matrix = neighbr_mat[:n_preds, :n_preds] * inv_vel_distances[:n_preds, :n_preds]
+            return_matrix[:n_preds, next_col] = 1 / (n_preds - 1) * np.sum(temp_matrix * v_x_diff[:n_preds, :n_preds],axis=0)
+            return_matrix[:n_preds, next_col + 1] = 1 / (n_preds - 1) * np.sum( temp_matrix * v_y_diff[:n_preds, :n_preds], axis=0)
+
+
             next_col += 2
 
         if "enemy_pos" in self.inputs: 
@@ -134,27 +133,26 @@ class aquarium(object):
             temp_matrix = neighbr_mat[:n_preds,n_preds:] * inv_distances[:n_preds, n_preds:]
             return_matrix[n_preds:, next_col] = (1/n_preds) * np.sum(temp_matrix * x_diff[:n_preds, n_preds:], axis=0)
             return_matrix[n_preds:, next_col+1] = (1/n_preds) * np.sum(temp_matrix * y_diff[:n_preds, n_preds:], axis=0)
-            
-            # Pred-Pred: X & Y velocity
-            temp_matrix = neighbr_mat[:n_preds, :n_preds] * inv_vel_distances[:n_preds, :n_preds]
-            return_matrix[:n_preds, next_col] = 1/(n_preds-1) * np.sum(temp_matrix * v_x_diff[:n_preds, :n_preds], axis=0)
-            return_matrix[:n_preds, next_col+1] = 1/(n_preds-1) * np.sum(temp_matrix * v_y_diff[:n_preds, :n_preds], axis=0)
+
+            # TODO: # Pred-Prey: X & Y. center of mass
+            temp_matrix = neighbr_mat[n_preds:, :n_preds] * inv_distances[n_preds:, :n_preds]
+            return_matrix[:n_preds, next_col] = 1 / n_preys * np.sum(temp_matrix * x_diff[n_preds:, :n_preds], axis=0)
+            return_matrix[:n_preds, next_col + 1] = 1 / n_preys * np.sum(temp_matrix * y_diff[n_preds:, :n_preds], axis=0)
 
             next_col += 2
         
         ## PREDETORS ##
         
         if "enemy_vel" in self.inputs:
-            # TODO: # Pred-Prey: X & Y. velocity
+            # Pred-Prey: X & Y. velocity
             temp_matrix = neighbr_mat[n_preds:, :n_preds] * inv_vel_distances[n_preds:, :n_preds]
             return_matrix[:n_preds, next_col] = 1/n_preys * np.sum(temp_matrix * v_x_diff[n_preds:, :n_preds], axis=0)
             return_matrix[:n_preds, next_col+1] = 1/n_preys * np.sum(temp_matrix * v_y_diff[n_preds:, :n_preds], axis=0)
-        
 
-            # TODO: # Pred-Prey: X & Y. center of mass
-            temp_matrix = neighbr_mat[n_preds:, :n_preds] * inv_distances[n_preds:, :n_preds]
-            return_matrix[:n_preds, next_col] = 1/n_preys * np.sum(temp_matrix * x_diff[n_preds:, :n_preds], axis=0)
-            return_matrix[:n_preds, next_col+1] = 1/n_preys * np.sum(temp_matrix * y_diff[n_preds:, :n_preds], axis=0)
+            # Prey-Pred: X & Y. velocity
+            temp_matrix = neighbr_mat[:n_preds, n_preds:] * inv_vel_distances[:n_preds, n_preds:]
+            return_matrix[n_preds:, next_col] = (1 / n_preds) * np.sum(temp_matrix * v_x_diff[:n_preds, n_preds:],axis=0)
+            return_matrix[n_preds:, next_col + 1] = (1 / n_preds) * np.sum(temp_matrix * v_y_diff[:n_preds, n_preds:], axis=0)
 
             next_col += 2
 
@@ -253,17 +251,17 @@ class aquarium(object):
 
         self.input_to_plot = len(self.inputs)
         if "wall" in self.inputs:
-            self.input_to_plot -= 2
+            self.input_to_plot -= 1
 
         self.plot_prey_arrow = []
         self.plot_pred_arrow = []
             
-        for i in range(self.input_to_plot//2)
+        for i in range(self.input_to_plot):
             temp, = plt.plot([], [], 'b-')
-            self.plot_prey_arrow[i].append(temp)
+            self.plot_prey_arrow.append(temp)
 
             temp, = plt.plot([], [], 'r-')
-            self.plot_pred_arrow[i].append(temp)
+            self.plot_pred_arrow.append(temp)
 
         self.video_filename = filename
         self.video_dpi = dpi
@@ -310,10 +308,11 @@ class aquarium(object):
         self.plot_pred.set_data(self.fish_xy[self.interval_pred,0], self.fish_xy[self.interval_pred,1])
 
         fish_index = len(self.interval_pred)
-        for i,input_index in enumarate(range(0,self.input_to_plot,2)):
+
+        for i,input_index in enumerate(range(0,self.input_to_plot*2,2)):
             x_data = [self.fish_xy[fish_index, 0], self.fish_xy[fish_index, 0] + self.brain_input[fish_index, input_index]]
             y_data = [self.fish_xy[fish_index, 1], self.fish_xy[fish_index, 1] + self.brain_input[fish_index, input_index+1]]
-            
+
             self.plot_prey_arrow[i].set_data(x_data, y_data)
             
             x_data = [self.fish_xy[0, 0], self.fish_xy[0, 0] + self.brain_input[0, input_index]]
@@ -329,9 +328,9 @@ if __name__ == '__main__':
     aquarium_paramters = {'nbr_of_prey': 15, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1, 'max_speed_prey': 0.07,
                           'max_speed_pred': 0.1, 'max_acc_prey': 0.1, 'max_acc_pred': 0.1, 'eat_radius': 0.1,
                           'weight_range': 5, 'nbr_of_hidden_neurons': 10, 'nbr_of_outputs': 2,
-                          'visibility_range': 0.3, 'input_set': set(["enemy_pos","wall"]) }
+                          'visibility_range': 0.3, 'input_set': set(["enemy_pos","wall","enemy_vel"]) }
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_paramters)
-    #a.set_videoutput('test.mp4')
+    a.set_videoutput('test.mp4')
     print(a.run_simulation())
