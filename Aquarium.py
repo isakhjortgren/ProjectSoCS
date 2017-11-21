@@ -57,7 +57,7 @@ class aquarium(object):
         self.acc_fish = None
 
     def neighbourhood(self, distances):
-        return np.exp(distances**2/(2*self.visibility_range**2))
+        return np.exp(-distances**2/(2*self.visibility_range**2))
 
     def calculate_inputs(self):
         
@@ -279,6 +279,7 @@ class aquarium(object):
         self.plot_prey_arrow.set_data(x_data_ff, y_data_ff)
         self.plot_pred_prey_arrow.set_data(x_data_sf, y_data_sf)
         self.plot_prey_pred_arrow.set_data(x_data_fs, y_data_fs)
+
         self.plot_text.set_text("Fish eaten = "+str(self.eaten))
         self.video_writer.grab_frame()
 
@@ -289,9 +290,9 @@ if __name__ == '__main__':
     aquarium_paramters = {'nbr_of_prey': 15, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1, 'max_speed_prey': 0.07,
                           'max_speed_pred': 0.1, 'max_acc_prey': 0.1, 'max_acc_pred': 0.1, 'eat_radius': 0.1,
                           'weight_range': 5, 'nbr_of_hidden_neurons': 10, 'nbr_of_inputs': 10, 'nbr_of_outputs': 2,
-                          'visibility_range':0.5}
+                          'visibility_range':0.3}
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_paramters)
-    #a.set_videoutput('test.mp4')
+    a.set_videoutput('test.mp4')
     print(a.run_simulation())
