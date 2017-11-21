@@ -4,7 +4,7 @@ random = np.random.random
 
 import matplotlib
 
-matplotlib.use("Agg")
+#matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.animation as manimation
 
@@ -57,7 +57,7 @@ class aquarium(object):
         self.acc_fish = None
 
     def neighbourhood(self, distances):
-        return np.exp(-distances**2/(2*self.visibility_range**2))
+        return np.exp(-distances**2/(2*self.visibility_range**2))/self.visibility_range
 
     def calculate_inputs(self):
         
@@ -217,10 +217,10 @@ class aquarium(object):
         self.plot_pred, = plt.plot([], [], 'ro', ms=5)
         self.plot_text = self.plot_ax.text(0,0.9, "Fish eaten = "+str(self.eaten))
 
-        self.plot_prey_arrow, = plt.plot([], [], 'k-')
+        self.plot_prey_arrow, = plt.plot([], [], 'b-')
         self.plot_pred_arrow, = plt.plot([], [], 'k-')
-        self.plot_prey_pred_arrow, = plt.plot([], [], 'k-')
-        self.plot_pred_prey_arrow, = plt.plot([], [], 'k-')
+        self.plot_prey_pred_arrow, = plt.plot([], [], 'g-')
+        self.plot_pred_prey_arrow, = plt.plot([], [], 'r-')
 
         self.video_filename = filename
         self.video_dpi = dpi
@@ -270,21 +270,21 @@ class aquarium(object):
         y_data_ss = [self.fish_xy[0, 1], self.fish_xy[0, 1] + self.brain_input[0, 1]]
         x_data_ff = [self.fish_xy[2, 0], self.fish_xy[2, 0] + self.brain_input[2, 0]]
         y_data_ff = [self.fish_xy[2, 1], self.fish_xy[2, 1] + self.brain_input[2, 1]]
-        x_data_fs = [self.fish_xy[2, 0], self.fish_xy[2, 0] + self.brain_input[2, 0]]
-        y_data_fs = [self.fish_xy[2, 1], self.fish_xy[2, 1] + self.brain_input[2, 1]]
-        x_data_sf = [self.fish_xy[0, 0], self.fish_xy[0, 0] + self.brain_input[0, 0]]
-        y_data_sf = [self.fish_xy[0, 1], self.fish_xy[0, 1] + self.brain_input[0, 1]]
+        x_data_fs = [self.fish_xy[2, 0], self.fish_xy[2, 0] + self.brain_input[2, 4]]
+        y_data_fs = [self.fish_xy[2, 1], self.fish_xy[2, 1] + self.brain_input[2, 5]]
+        x_data_sf = [self.fish_xy[0, 0], self.fish_xy[0, 0] + self.brain_input[0, 4]]
+        y_data_sf = [self.fish_xy[0, 1], self.fish_xy[0, 1] + self.brain_input[0, 5]]
 
         self.plot_pred_arrow.set_data(x_data_ss, y_data_ss)
         self.plot_prey_arrow.set_data(x_data_ff, y_data_ff)
         self.plot_pred_prey_arrow.set_data(x_data_sf, y_data_sf)
         self.plot_prey_pred_arrow.set_data(x_data_fs, y_data_fs)
 
+        #print(x_data_sf)
+
         self.plot_text.set_text("Fish eaten = "+str(self.eaten))
         self.video_writer.grab_frame()
 
-
-#raise NotImplementedError("Sorry, ledsen, förlåt: Vi gick hem trots ofärdig kod.")
 if __name__ == '__main__':
 
     aquarium_paramters = {'nbr_of_prey': 15, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1, 'max_speed_prey': 0.07,
