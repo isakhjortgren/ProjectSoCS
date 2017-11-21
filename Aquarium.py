@@ -19,7 +19,7 @@ class aquarium(object):
     def __init__(self, nbr_of_prey, nbr_of_pred, size_X, size_Y,
                  max_speed_prey,max_speed_pred,max_acc_prey,max_acc_pred, 
                  eat_radius, nbr_of_hidden_neurons,nbr_of_inputs,nbr_of_outputs,
-                 weight_range ):
+                 weight_range, visibility_range):
 
 
         #ToDo Init object variables
@@ -32,6 +32,7 @@ class aquarium(object):
         self.prey_brain = Brain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range) 
 
         self.eat_radius = eat_radius
+        self.visibility_range = visibility_range
 
         self.nbr_of_prey = nbr_of_prey
         self.nbr_of_pred = nbr_of_pred
@@ -44,7 +45,7 @@ class aquarium(object):
 
         #Constant
         self.fish_xy_start = np.matrix(random(size=(nbr_of_prey+nbr_of_pred,2)))\
-                            *np.matrix([[size_X,0],[0,size_Y]])
+                            *np.matrix([[size_X, 0], [0,size_Y]])
         
         self.brain_input = None  #TODO: Only for debug purposes 
         self.interval_pred = None
@@ -56,8 +57,7 @@ class aquarium(object):
         self.acc_fish = None
 
     def neighbourhood(self, distances):
-        # TODO: Implement function!
-        return np.ones(distances.shape)
+        return np.exp(distances**2/(2*self.visibility_range))
 
     def calculate_inputs(self):
         
