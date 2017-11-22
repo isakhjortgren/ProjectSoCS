@@ -32,14 +32,14 @@ class aquarium(object):
         self.inputs = input_set
 
         if "prey" in rand_walk_brain_set:
-            self.pred_brain = Brain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
+            self.prey_brain = randomBrain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
         else: 
-            self.pred_brain = randomBrain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
+            self.prey_brain = Brain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
         
         if "pred" in rand_walk_brain_set:
-            self.prey_brain = randomBrain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
+            self.pred_brain = randomBrain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
         else:
-            self.prey_brain = Brain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
+            self.pred_brain = Brain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
 
 
         self.eat_radius = eat_radius
