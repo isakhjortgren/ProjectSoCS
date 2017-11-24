@@ -4,6 +4,8 @@ random = np.random.random
 
 import matplotlib
 
+import math 
+
 import matplotlib.pyplot as plt
 import matplotlib.animation as manimation
 
@@ -186,7 +188,7 @@ class aquarium(object):
 
         # Integrate new position and velocity.
         self.fish_xy += self.fish_vel*dt + 0.5*self.acc_fish*dt*dt
-        self.fish_vel += self.acc_fish*dt
+        self.fish_vel += self.acc_fish*dt 
 
         # Correct for reflective boundary
         for i in range(len(self.fish_xy)):
@@ -202,6 +204,34 @@ class aquarium(object):
             elif self.fish_xy[i, 1] > self.size_Y:
                 self.fish_xy[i, 1] = self.size_Y
                 self.fish_vel[i, 1] = 0
+
+
+        N = len(self.fish_xy)
+        collision_len = self.eat_radius/4
+        x_diff = np.column_stack([self.fish_xy[:,0]]*N) - np.row_stack([self.fish_xy[:,0]]*N) 
+        y_diff = np.column_stack([self.fish_xy[:,1]]*N) - np.row_stack([self.fish_xy[:,1]]*N) 
+        
+ 
+        collision_indicies = (abs(x_diff)<collision_len) & (abs(y_diff)<collision_len) & np.tril(np.ones((N,N),dtype=bool),k=-1)
+     
+
+        collision_indicies = np.column_stack(np.where(collision_indicies))
+
+        if len(collision_indicies)>0:
+            print(collision_indicies)
+
+
+        for i,j in collision_indicies:
+
+            col_vec = self.fish_xy[i,:]-self.fish_xy[j,:]
+            col_vec_len = np.sqrt(np.sum(col_vec**2))
+            move_dist =  0.5*(collision_len - col_vec_len)
+            col_vec_norm = col_vec / col_vec_len
+            self.fish_xy[i,:] += col_vec_norm * move_dist 
+            self.fish_xy[j,:] -= col_vec_norm * move_dist 
+            print("collision fixed: ",i,j)
+
+
 
         # Correct for max velocities
         vel_magnitudes = np.linalg.norm(self.fish_vel,axis=1)
@@ -296,8 +326,10 @@ class aquarium(object):
                     time += dt
         else:
             while time < MAX_TIME and self.eaten <= HALF_NBR_FISHES:
+                print(time)
                 self.timestep(dt)
                 time += dt
+
 
         score = self.eaten/time
         return (-score, score) #Prey score is negative pred score
@@ -325,12 +357,13 @@ class aquarium(object):
 
 if __name__ == '__main__':
 
-    aquarium_paramters = {'nbr_of_prey': 15, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1, 'max_speed_prey': 0.07,
+    aquarium_paramters = {'nbr_of_prey': 6, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1, 'max_speed_prey': 0.07,
                           'max_speed_pred': 0.1, 'max_acc_prey': 0.1, 'max_acc_pred': 0.1, 'eat_radius': 0.1,
                           'weight_range': 5, 'nbr_of_hidden_neurons': 10, 'nbr_of_outputs': 2,
                           'visibility_range': 0.3, 'input_set': set(["enemy_pos","wall","enemy_vel"]) }
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_paramters)
-    a.set_videoutput('test.mp4')
+    #a.set_videoutput('test.mp4')
     print(a.run_simulation())
+    print("LOL")
