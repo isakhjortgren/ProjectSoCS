@@ -26,7 +26,6 @@ try:
         else:
             aquarium_parameters['rand_walk_brain_set'] = set('pred')
             pso_prey = PSO(aquarium_parameters=aquarium_parameters, train_prey=True)
-            pso_prey.create_aquariums()
 
         pso_prey.run_pso()
         best_prey_brain = pso_prey.swarm_best_position
