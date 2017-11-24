@@ -190,6 +190,48 @@ class aquarium(object):
         self.fish_xy += self.fish_vel*dt + 0.5*self.acc_fish*dt*dt
         self.fish_vel += self.acc_fish*dt 
 
+         #todo-future: # Correct for collision ???
+        N = len(self.fish_xy)
+        collision_len = self.eat_radius/2
+        x_diff = np.column_stack([self.fish_xy[:,0]]*N) - np.row_stack([self.fish_xy[:,0]]*N) 
+        y_diff = np.column_stack([self.fish_xy[:,1]]*N) - np.row_stack([self.fish_xy[:,1]]*N) 
+        
+        #Boolean magic to the people! 
+        collision_indicies =    (abs(x_diff)<collision_len) & \
+                                (abs(y_diff)<collision_len) & \
+                                np.tril(np.ones((N,N),dtype=bool),k=-1)
+
+        collision_indicies = np.column_stack(np.where(collision_indicies))
+
+        if len(collision_indicies)>0:
+            #print(len(collision_indicies))    
+            i_es = collision_indicies[:,0]
+            j_es = collision_indicies[:,1]
+
+            col_vec = self.fish_xy[i_es,:]-self.fish_xy[j_es,:]
+            col_vec_len = np.sqrt(np.sum(col_vec**2,axis=1))
+            move_dist =  0.5*(collision_len - col_vec_len)
+            
+            #Catch division by zero here
+            index_zero_div = np.where(col_vec_len==0)
+            col_vec_len[index_zero_div] = np.sqrt(np.sum(self.fish_vel[index_zero_div,:]**2,axis=1))
+            col_vec[index_zero_div] = -self.fish_vel[index_zero_div,:]                
+
+            col_vec_norm = col_vec / col_vec_len[:,np.newaxis]
+
+            self.fish_xy[i_es,:] += col_vec_norm * move_dist[:,np.newaxis] 
+            self.fish_xy[j_es,:] -= col_vec_norm * move_dist[:,np.newaxis] 
+
+            for i in range(len(i_es)):
+                if math.isnan(col_vec_norm[i,0]):#or math.isnan(move_dist[i]):
+                    print("NaN at index ", i ,"of", len(collision_indicies), "collisions") 
+                    print(col_vec)
+                    print(col_vec_len)
+                    print(move_dist)
+
+                    exit()
+
+
         # Correct for reflective boundary
         for i in range(len(self.fish_xy)):
             if self.fish_xy[i, 0] < 0:
@@ -206,31 +248,7 @@ class aquarium(object):
                 self.fish_vel[i, 1] = 0
 
 
-        N = len(self.fish_xy)
-        collision_len = self.eat_radius/4
-        x_diff = np.column_stack([self.fish_xy[:,0]]*N) - np.row_stack([self.fish_xy[:,0]]*N) 
-        y_diff = np.column_stack([self.fish_xy[:,1]]*N) - np.row_stack([self.fish_xy[:,1]]*N) 
         
- 
-        collision_indicies = (abs(x_diff)<collision_len) & (abs(y_diff)<collision_len) & np.tril(np.ones((N,N),dtype=bool),k=-1)
-     
-
-        collision_indicies = np.column_stack(np.where(collision_indicies))
-
-        if len(collision_indicies)>0:
-            print(collision_indicies)
-
-
-        for i,j in collision_indicies:
-
-            col_vec = self.fish_xy[i,:]-self.fish_xy[j,:]
-            col_vec_len = np.sqrt(np.sum(col_vec**2))
-            move_dist =  0.5*(collision_len - col_vec_len)
-            col_vec_norm = col_vec / col_vec_len
-            self.fish_xy[i,:] += col_vec_norm * move_dist 
-            self.fish_xy[j,:] -= col_vec_norm * move_dist 
-            print("collision fixed: ",i,j)
-
 
 
         # Correct for max velocities
@@ -258,7 +276,9 @@ class aquarium(object):
                     self.interval_prey.pop()
                     break #A shark can only eat one fish per time step.
 
-        #todo-future: # Correct for collision ???
+       
+
+
 
     def set_videoutput(self, filename, fps=15, dpi=100):
         if self.video_enabled :
@@ -303,7 +323,7 @@ class aquarium(object):
 
     def run_simulation(self):
 
-        dt = 0.1 #todo: calculate dt from max vel and acc. hashtag physics
+        dt = 0.05 #todo: calculate dt from max vel and acc. hashtag physics
         time = 0
         MAX_TIME = 20
         HALF_NBR_FISHES = len(self.fish_xy_start) // 2
@@ -326,7 +346,6 @@ class aquarium(object):
                     time += dt
         else:
             while time < MAX_TIME and self.eaten <= HALF_NBR_FISHES:
-                print(time)
                 self.timestep(dt)
                 time += dt
 
@@ -357,13 +376,13 @@ class aquarium(object):
 
 if __name__ == '__main__':
 
-    aquarium_paramters = {'nbr_of_prey': 6, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1, 'max_speed_prey': 0.07,
+    aquarium_paramters = {'nbr_of_prey': 20, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1, 'max_speed_prey': 0.07,
                           'max_speed_pred': 0.1, 'max_acc_prey': 0.1, 'max_acc_pred': 0.1, 'eat_radius': 0.1,
                           'weight_range': 5, 'nbr_of_hidden_neurons': 10, 'nbr_of_outputs': 2,
-                          'visibility_range': 0.3, 'input_set': set(["enemy_pos","wall","enemy_vel"]) }
+                          'visibility_range': 0.3, 'input_set': set(["enemy_pos"]) }
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_paramters)
-    #a.set_videoutput('test.mp4')
+    a.set_videoutput('test.mp4')
     print(a.run_simulation())
     print("LOL")
