@@ -19,7 +19,7 @@ class aquarium(object):
                  max_speed_prey,max_speed_pred,max_acc_prey,max_acc_pred, 
                  eat_radius, nbr_of_hidden_neurons,nbr_of_outputs,
                  weight_range, visibility_range, safe_boundary=True,
-                 rand_walk_brain_set=set(), input_set=set(["friend_pos","friend_vel","enemy_pos","enemy_vel","wall"]) ):
+                 rand_walk_brain_set=[], input_set=["friend_pos","friend_vel","enemy_pos","enemy_vel","wall"]):
 
 
         #ToDo Init object variables

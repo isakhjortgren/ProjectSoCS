@@ -5,9 +5,9 @@ from Aquarium import aquarium
 
 aquarium_parameters = {'nbr_of_prey': 15, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1, 'max_speed_prey': 0.07,
                        'max_speed_pred': 0.1, 'max_acc_prey': 0.15, 'max_acc_pred': 0.1, 'eat_radius': 0.05,
-                       'weight_range': 5, 'nbr_of_hidden_neurons': 10, 'nbr_of_outputs': 2,
-                       'visibility_range': 0.3, 'rand_walk_brain_set': set(),
-                       'input_set': set(["friend_pos","friend_vel","enemy_pos","enemy_vel","wall"])}
+                       'weight_range': 5, 'nbr_of_hidden_neurons': 3, 'nbr_of_outputs': 2,
+                       'visibility_range': 0.3, 'rand_walk_brain_set': [],
+                       'input_set': ["enemy_pos"]}
 
 list_of_pso_prey = list()
 list_of_pso_pred = list()
@@ -19,12 +19,12 @@ try:
         print('Training preys, iteration: ', i+1, ' out of ', nbr_of_training_alternations)
         # Train prey
         if i != 0:
-            aquarium_parameters['rand_walk_brain_set'] = set()
+            aquarium_parameters['rand_walk_brain_set'] = []
             pso_prey = PSO(aquarium_parameters=aquarium_parameters, train_prey=True)
             for i_aquarium in pso_prey.list_of_aquarium:
                 i_aquarium.pred_brain.update_brain(best_pred_brain)
         else:
-            aquarium_parameters['rand_walk_brain_set'] = set('pred')
+            aquarium_parameters['rand_walk_brain_set'] = ['pred']
             pso_prey = PSO(aquarium_parameters=aquarium_parameters, train_prey=True)
 
         pso_prey.run_pso()
