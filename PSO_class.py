@@ -8,32 +8,21 @@ nrb_of_cores = multiprocessing.cpu_count()
 
 class PSO(object):
 
-    def __init__(self, train_prey=False):
+    def __init__(self, aquarium_parameters, train_prey=False):
         # aquarium parameters
-        self.nbr_of_aquariums = 4
-        self.nbr_of_hidden_neurons = 10
-        self.nbr_of_inputs = 10
-        self.nbr_of_outputs = 2
-        self.weight_range = 5
-
-        self.aquarium_parameters = {'nbr_of_prey': 15, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1,
-                                   'max_speed_prey': 0.07, 'max_speed_pred': 0.1, 'max_acc_prey': 0.1,
-                                   'max_acc_pred': 0.1, 'eat_radius': 0.1, 'weight_range': 5,
-                                   'nbr_of_hidden_neurons': 10, 'nbr_of_inputs': 10, 'nbr_of_outputs': 2,
-                                   'visibility_range': 0.3}
-
-        self.aquarium_parameters_old = {'nbr_of_prey': 10, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1,
-                                    'max_speed_prey': 0.01, 'max_speed_pred': 0.1, 'nbr_of_iterations': 100,
-                                    'maximum_acceleration': 1, 'nbr_of_hidden_neurons': self.nbr_of_hidden_neurons,
-                                    'nbr_of_inputs': self.nbr_of_inputs, 'nbr_of_outputs': self.nbr_of_outputs,
-                                    'weight_range': self.weight_range}
+        self.nbr_of_hidden_neurons = aquarium_parameters['nbr_of_hidden_neurons']
+        self.nbr_of_inputs = len(aquarium_parameters['input_set'])*2
+        self.nbr_of_outputs = aquarium_parameters['nbr_of_outputs']
+        self.weight_range = aquarium_parameters['weight_range']
+        self.aquarium_parameters = aquarium_parameters
 
         self.train_prey = train_prey
 
         # PSO parameters
+        self.nbr_of_aquariums = 4
         self.nbr_of_particles = 30
-        self.nbr_of_iterations = 30
-        self.maximum_velocity = 5
+        self.nbr_of_iterations = 400
+        self.maximum_velocity = self.weight_range
         self.c1 = 2
         self.c2 = 2
         self.inertia_weight = 1.4
@@ -50,10 +39,9 @@ class PSO(object):
         self.particle_best_position = np.copy(self.positions_matrix)
         self.list_of_swarm_best_value = list()
         self.list_of_aquarium = list()
-        self.create_aquariums(self.nbr_of_aquariums)
+        self.create_aquariums()
 
-    def create_aquariums(self, nbr_of_aquariums):
-        self.nbr_of_aquariums = nbr_of_aquariums
+    def create_aquariums(self):
         self.list_of_aquarium = list()
         for i in range(self.nbr_of_aquariums):
             self.list_of_aquarium.append(aquarium(**self.aquarium_parameters))
@@ -81,7 +69,7 @@ class PSO(object):
 
     def run_pso(self):
         for i_iteration in range(self.nbr_of_iterations):
-            print(f'Epoch number {i_iteration} out of {self.nbr_of_iterations}')
+            print(f'Epoch number {i_iteration+1} out of {self.nbr_of_iterations}')
 
             particle_values = np.zeros(self.nbr_of_particles)
             for i_particle in range(self.nbr_of_particles):
