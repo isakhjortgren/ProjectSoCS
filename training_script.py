@@ -23,6 +23,8 @@ try:
             pso_prey = PSO(aquarium_parameters=aquarium_parameters, train_prey=True)
             for i_aquarium in pso_prey.list_of_aquarium:
                 i_aquarium.pred_brain.update_brain(best_pred_brain)
+            for i_aquarium in pso_prey.list_of_validation_aquarium:
+                i_aquarium.pred_brain.update_brain(best_pred_brain)
         else:
             aquarium_parameters['rand_walk_brain_set'] = ['pred']
             pso_prey = PSO(aquarium_parameters=aquarium_parameters, train_prey=True)
@@ -36,6 +38,8 @@ try:
         # Train predator
         pso_pred = PSO(aquarium_parameters=aquarium_parameters, train_prey=False)
         for i_aquarium in pso_pred.list_of_aquarium:
+            i_aquarium.prey_brain.update_brain(best_prey_brain)
+        for i_aquarium in pso_pred.list_of_validation_aquarium:
             i_aquarium.prey_brain.update_brain(best_prey_brain)
         pso_pred.run_pso()
         best_pred_brain = pso_pred.get_particle_position_with_best_val_fitness()
