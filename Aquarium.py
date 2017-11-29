@@ -73,7 +73,7 @@ class aquarium(object):
         self.acc_fish = None
 
     def neighbourhood(self, distances):
-        return np.exp(-distances**2/(2*self.visibility_range**2)) #/self.visibility_range
+        return np.exp(-distances**2/(2*self.visibility_range**2)) /self.visibility_range 
 
     def calculate_inputs(self):
         
