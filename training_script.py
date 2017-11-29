@@ -3,11 +3,11 @@ from PSO_class import PSO
 from Aquarium import aquarium
 
 
-aquarium_parameters = {'nbr_of_prey': 15, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y': 1, 'max_speed_prey': 0.07,
-                       'max_speed_pred': 0.1, 'max_acc_prey': 0.15, 'max_acc_pred': 0.1, 'eat_radius': 0.05,
-                       'weight_range': 5, 'nbr_of_hidden_neurons': 3, 'nbr_of_outputs': 2,
-                       'visibility_range': 0.3, 'rand_walk_brain_set': [],
-                       'input_set': ["enemy_pos"]}
+aquarium_parameters = {'nbr_of_prey': 15, 'nbr_of_pred': 2, 'size_X': 5, 'size_Y': 5, 'max_speed_prey': 0.05,
+                       'max_speed_pred': 0.1, 'max_acc_prey': 0.2, 'max_acc_pred': 0.1, 'eat_radius': 0.05,
+                       'weight_range': 5, 'nbr_of_hidden_neurons': 5, 'nbr_of_outputs': 2,
+                       'visibility_range': 0.5, 'rand_walk_brain_set': [],
+                       'input_set': ["enemy_pos", "friend_pos", "wall"]}
 
 list_of_pso_prey = list()
 list_of_pso_pred = list()
@@ -28,7 +28,7 @@ try:
             pso_prey = PSO(aquarium_parameters=aquarium_parameters, train_prey=True)
 
         pso_prey.run_pso()
-        best_prey_brain = pso_prey.swarm_best_position
+        best_prey_brain = pso_prey.get_particle_position_with_best_val_fitness()
 
         list_of_pso_prey.append(pso_prey)
 
@@ -38,7 +38,7 @@ try:
         for i_aquarium in pso_pred.list_of_aquarium:
             i_aquarium.prey_brain.update_brain(best_prey_brain)
         pso_pred.run_pso()
-        best_pred_brain = pso_pred.swarm_best_position
+        best_pred_brain = pso_pred.get_particle_position_with_best_val_fitness()
 
         list_of_pso_pred.append(pso_pred)
 except KeyboardInterrupt:

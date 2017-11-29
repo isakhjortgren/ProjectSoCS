@@ -344,7 +344,8 @@ class aquarium(object):
 
         dt = 0.25*  min(self.eat_radius, self.collision_len) / max(self.max_vel_prey, self.max_vel_pred)
         time = 0
-        MAX_TIME = 100
+
+        MAX_TIME = 50
         HALF_NBR_FISHES = len(self.fish_xy_start) // 2
 
         self.fish_xy = np.copy(self.fish_xy_start )
