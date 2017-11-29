@@ -7,7 +7,7 @@ import matplotlib
 import math 
 
 import matplotlib.pyplot as plt
-import matplotlib.animation as manimation
+#import matplotlib.animation as manimation
 
 from Brain import Brain, randomBrain
 
@@ -59,6 +59,8 @@ class aquarium(object):
         self.collision_len = 0.5*self.eat_radius
         self.safe_boundary = safe_boundary
 
+
+
         #Constant
         self.fish_xy_start = np.matrix(random(size=(nbr_of_prey+nbr_of_pred,2)))\
                             *np.matrix([[size_X, 0], [0,size_Y]])
@@ -71,6 +73,9 @@ class aquarium(object):
         self.fish_xy = None
         self.fish_vel = None
         self.acc_fish = None
+
+        self.x_diff = None
+        self.y_diff = None
 
     def neighbourhood(self, distances):
         return np.exp(-distances**2/(2*self.visibility_range**2)) /self.visibility_range 
@@ -87,8 +92,11 @@ class aquarium(object):
         return_matrix = np.zeros(( N, self.pred_brain.nbr_of_inputs))
 
         ## Differences ##
-        x_diff = np.column_stack([self.fish_xy[:,0]]*N) - np.row_stack([self.fish_xy[:,0]]*N) 
-        y_diff = np.column_stack([self.fish_xy[:,1]]*N) - np.row_stack([self.fish_xy[:,1]]*N) 
+        self.x_diff = np.column_stack([self.fish_xy[:,0]]*N) - np.row_stack([self.fish_xy[:,0]]*N) 
+        self.y_diff = np.column_stack([self.fish_xy[:,1]]*N) - np.row_stack([self.fish_xy[:,1]]*N) 
+
+        x_diff = self.x_diff 
+        y_diff = self.y_diff
 
         v_x_diff = np.column_stack([self.fish_vel[:,0]]*N) - np.row_stack([self.fish_vel[:,0]]*N)
         v_y_diff = np.column_stack([self.fish_vel[:,1]]*N) - np.row_stack([self.fish_vel[:,1]]*N)
@@ -172,6 +180,8 @@ class aquarium(object):
     def timestep(self,dt):
         
         self.brain_input = self.calculate_inputs()
+        
+        #Get descisions and correct for max acceleration
         for i in self.interval_prey:
             acc_temp = self.prey_brain.make_decision(self.brain_input[i,:])
             norm_acc = np.linalg.norm(acc_temp)
@@ -188,13 +198,10 @@ class aquarium(object):
             else:
                 self.acc_fish[i] = self.max_acc_pred * acc_temp
 
-         #todo-future: # Correct for collision ???
+        # Take care of collisions
         N = len(self.fish_xy)
-        collision_len = self.eat_radius*0.8
-        x_diff = np.column_stack([self.fish_xy[:,0]]*N) - np.row_stack([self.fish_xy[:,0]]*N) 
-        y_diff = np.column_stack([self.fish_xy[:,1]]*N) - np.row_stack([self.fish_xy[:,1]]*N) 
-        
-        #Boolean magic to the people! 
+        x_diff = self.x_diff #Already calculated in calculate_inputs()
+        y_diff = self.y_diff #Already calculated in calculate_inputs()
         collision_indicies =    (abs(x_diff)<self.collision_len) & \
                                 (abs(y_diff)<self.collision_len) & \
                                 np.tril(np.ones((N,N),dtype=bool),k=-1)
@@ -202,7 +209,6 @@ class aquarium(object):
         collision_indicies = np.column_stack(np.where(collision_indicies))
 
         if len(collision_indicies)>0:
-            #print(len(collision_indicies))    
             i_es = collision_indicies[:,0]
             j_es = collision_indicies[:,1]
 
@@ -216,19 +222,12 @@ class aquarium(object):
 
             distances[distances<0.00000001] = 0.00000001 
 
-       
-
             self.acc_fish[i_es,:] += strength[:,np.newaxis] * col_vec / distances[:,np.newaxis] 
             self.acc_fish[j_es,:] -= strength[:,np.newaxis] * col_vec / distances[:,np.newaxis] 
 
           
-            if math.isnan(self.fish_xy[0,0]):#or math.isnan(move_dist[i]):
-                print("NaN at index ", i ,"of", len(collision_indicies), "collisions") 
-                print(col_vec)
-                print(strength)
-                exit()
-
-        #print(self.acc_fish)
+            if math.isnan(self.fish_xy[0,0]):
+                raise RuntimeError("NaN value in coordinate")
 
         # Integrate new position and velocity.
         self.fish_xy += self.fish_vel*dt + 0.5*self.acc_fish*dt*dt
@@ -288,12 +287,9 @@ class aquarium(object):
                 self.fish_vel[i] = self.max_vel_pred * self.fish_vel[i] / vel_magnitudes[i]
 
         # Check shark eats fish
+        #TODO: speed this up with matrix operation 
         for shark in self.interval_pred:
             for prey in self.interval_prey:
-                if prey >= len(self.fish_xy) or shark >= len(self.fish_xy):
-                    #TODO: Good code shouldn't need this
-                    break
-
                 if self.eat_radius > np.linalg.norm(self.fish_xy[shark,:]-self.fish_xy[prey,:]):
                     self.eaten += 1
                     self.fish_xy    = np.delete(self.fish_xy, prey, axis=0)
@@ -347,10 +343,9 @@ class aquarium(object):
     def run_simulation(self):
 
         dt = 0.25*  min(self.eat_radius, self.collision_len) / max(self.max_vel_prey, self.max_vel_pred)
-        print("dt = ", dt)
         time = 0
         MAX_TIME = 100
-        HALF_NBR_FISHES = len(self.fish_xy_start) // 3
+        HALF_NBR_FISHES = len(self.fish_xy_start) // 2
 
         self.fish_xy = np.copy(self.fish_xy_start )
 
@@ -407,6 +402,6 @@ if __name__ == '__main__':
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_paramters)
-    a.set_videoutput('test.mp4',fps=25)
+   # a.set_videoutput('test.mp4',fps=25)
     print(a.run_simulation())
     print("LOL")
