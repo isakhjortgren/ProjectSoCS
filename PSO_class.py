@@ -36,6 +36,7 @@ class PSO(object):
                                                                            self.vector_length) - 1)
         self.swarm_best_value = -np.inf
         self.swarm_best_position = None
+        self.list_of_swarm_best_positions = list()
         self.particle_best_value = np.zeros(self.nbr_of_particles)
         self.particle_best_position = np.copy(self.positions_matrix)
         self.list_of_swarm_best_value = list()
@@ -74,6 +75,10 @@ class PSO(object):
         else:
             return result_pred
 
+    def get_particle_position_with_best_val_fitness(self):
+        index_with_best_val_fitness = np.argmax(self.list_of_validation_results)
+        return self.list_of_swarm_best_positions[index_with_best_val_fitness]
+
     def run_pso(self):
         for i_iteration in range(self.nbr_of_iterations):
             print(f'Epoch number {i_iteration+1} out of {self.nbr_of_iterations}')
@@ -95,6 +100,7 @@ class PSO(object):
                                                                   for i_aquarium in self.list_of_validation_aquarium)
                 validation_score = np.mean(validation_scores)
             self.list_of_swarm_best_value.append(self.swarm_best_value)
+            self.list_of_swarm_best_positions.append(self.swarm_best_position)
 
             self.list_of_validation_results.append(validation_score)
 
