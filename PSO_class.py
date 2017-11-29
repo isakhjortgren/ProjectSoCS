@@ -19,7 +19,8 @@ class PSO(object):
         self.train_prey = train_prey
 
         # PSO parameters
-        self.nbr_of_aquariums = 4
+        self.nbr_of_validation_aquariums = 4
+        self.nbr_of_aquariums = 8
         self.nbr_of_particles = 30
         self.nbr_of_iterations = 400
         self.maximum_velocity = self.weight_range
@@ -38,13 +39,19 @@ class PSO(object):
         self.particle_best_value = np.zeros(self.nbr_of_particles)
         self.particle_best_position = np.copy(self.positions_matrix)
         self.list_of_swarm_best_value = list()
+        self.list_of_validation_results = list()
         self.list_of_aquarium = list()
+        self.list_of_validation_aquarium = list()
         self.create_aquariums()
 
     def create_aquariums(self):
         self.list_of_aquarium = list()
         for i in range(self.nbr_of_aquariums):
             self.list_of_aquarium.append(aquarium(**self.aquarium_parameters))
+
+        self.list_of_validation_aquarium = list()
+        for i in range(self.nbr_of_validation_aquariums):
+            self.list_of_validation_aquarium.append(aquarium(**self.aquarium_parameters))
 
     def update_brain(self, pred_or_prey, array):
         if pred_or_prey == 'prey':
@@ -84,7 +91,13 @@ class PSO(object):
             if iteration_best > self.swarm_best_value:
                 self.swarm_best_value = iteration_best
                 self.swarm_best_position = self.positions_matrix[np.argmax(particle_values), :]
+                validation_scores = Parallel(n_jobs=nrb_of_cores)(delayed(self.run_one_aquarium)(i_aquarium, array)
+                                                                  for i_aquarium in self.list_of_validation_aquarium)
+                validation_score = np.mean(validation_scores)
             self.list_of_swarm_best_value.append(self.swarm_best_value)
+
+            self.list_of_validation_results.append(validation_score)
+
 
             temp = particle_values > self.particle_best_value
             self.particle_best_value[temp] = particle_values[temp]

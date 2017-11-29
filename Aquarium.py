@@ -20,8 +20,8 @@ class aquarium(object):
     def __init__(self, nbr_of_prey, nbr_of_pred, size_X, size_Y,
                  max_speed_prey,max_speed_pred,max_acc_prey,max_acc_pred, 
                  eat_radius, nbr_of_hidden_neurons,nbr_of_outputs,
-                 weight_range, visibility_range,
-                 rand_walk_brain_set=set(), input_set=set(["friend_pos","friend_vel","enemy_pos","enemy_vel","wall"]) ):
+                 weight_range, visibility_range, safe_boundary=True,
+                 rand_walk_brain_set=[], input_set=["friend_pos","friend_vel","enemy_pos","enemy_vel","wall"]):
 
 
         #ToDo Init object variables
@@ -57,6 +57,7 @@ class aquarium(object):
         self.max_acc_pred = max_acc_pred
 
         self.collision_len = 0.5*self.eat_radius
+        self.safe_boundary = safe_boundary
 
         #Constant
         self.fish_xy_start = np.matrix(random(size=(nbr_of_prey+nbr_of_pred,2)))\
@@ -233,23 +234,49 @@ class aquarium(object):
         self.fish_xy += self.fish_vel*dt + 0.5*self.acc_fish*dt*dt
         self.fish_vel += self.acc_fish*dt 
 
-        
 
-        # Correct for reflective boundary
-        for i in range(len(self.fish_xy)):
-            if self.fish_xy[i, 0] < 0:
-                self.fish_xy[i, 0] = (random())/(self.size_X*500)
-                self.fish_vel[i, 0] = 0
-            elif self.fish_xy[i, 0] > self.size_X:
-                self.fish_xy[i, 0] = self.size_X - (random())/(self.size_X*1000)
-                self.fish_vel[i, 0] = 0
-            if self.fish_xy[i, 1] < 0:
-                self.fish_xy[i, 1] = (random())/(self.size_Y*500)
-                self.fish_vel[i, 1] = 0
-            elif self.fish_xy[i, 1] > self.size_Y:
-                self.fish_xy[i, 1] = self.size_Y - (random())/(self.size_Y*1000)
-                self.fish_vel[i, 1] = 0
+        # Effect of boundary, fish either stops or dies
+        if self.safe_boundary:
+            # Safe boundary, need to correct for reflective boundary
+            for i in range(len(self.fish_xy)):
+                if self.fish_xy[i, 0] < 0:
+                    self.fish_xy[i, 0] = (random()) / (self.size_X * 500)
+                    self.fish_vel[i, 0] = 0
+                elif self.fish_xy[i, 0] > self.size_X:
+                    self.fish_xy[i, 0] = self.size_X - (random()) / (self.size_X * 1000)
+                    self.fish_vel[i, 0] = 0
+                if self.fish_xy[i, 1] < 0:
+                    self.fish_xy[i, 1] = (random()) / (self.size_Y * 500)
+                    self.fish_vel[i, 1] = 0
+                elif self.fish_xy[i, 1] > self.size_Y:
+                    self.fish_xy[i, 1] = self.size_Y - (random()) / (self.size_Y * 1000)
+                    self.fish_vel[i, 1] = 0
+        else:
+            # Sharks stop at boundary, fishes die
+            for i in self.interval_pred:
+                if self.fish_xy[i, 0] < 0:
+                    self.fish_xy[i, 0] = 0
+                    self.fish_vel[i, 0] = 0
+                elif self.fish_xy[i, 0] > self.size_X:
+                    self.fish_xy[i, 0] = self.size_X
+                    self.fish_vel[i, 0] = 0
+                if self.fish_xy[i, 1] < 0:
+                    self.fish_xy[i, 1] = 0
+                    self.fish_vel[i, 1] = 0
+                elif self.fish_xy[i, 1] > self.size_Y:
+                    self.fish_xy[i, 1] = self.size_Y
+                    self.fish_vel[i, 1] = 0
 
+            off_boundary = (self.size_X < self.fish_xy[:, 0]) | (self.fish_xy[:, 0] < 0) | \
+                           (self.size_Y < self.fish_xy[:, 1]) | (self.fish_xy[:, 0] < 0)
+            kill_prey = off_boundary[self.interval_pred] = False
+            kill_prey = np.array(kill_prey, dtype = int)
+            self.fish_xy = np.delete(self.fish_xy, kill_prey, axis=0)
+            self.fish_vel = np.delete(self.fish_vel, kill_prey, axis=0)
+            self.acc_fish = np.delete(self.acc_fish, kill_prey, axis=0)
+            nbr_killed = kill_prey.sum()
+            for i in range(nbr_killed):
+                self.interval_prey.pop()
 
         # Correct for max velocities
         vel_magnitudes = np.linalg.norm(self.fish_vel,axis=1)

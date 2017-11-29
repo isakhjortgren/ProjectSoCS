@@ -4,15 +4,33 @@ import matplotlib.pyplot as plt
 import matplotlib
 
 with open('TrainingData.p', 'rb') as f:
-    pso = pickle.load(f)
+    pso_data = pickle.load(f)
 
-plt.plot(pso.list_of_swarm_best_value, 'b.')
-plt.xlabel('iterations')
-plt.ylabel('fitness score')
-plt.show()
+list_of_pso_prey = pso_data['list_of_pso_prey']
 
-aquarium_1 = pso.list_of_aquarium[0]
-aquarium_1.pred_brain.update_brain(pso.swarm_best_position)
-aquarium_1.set_videoutput('trained_.mp4')
+fig, axes = plt.subplots(nrows=len(list_of_pso_prey), ncols=4)
 
-print(aquarium_1.run_simulation())
+for i_pso_prey, pso_prey in enumerate(list_of_pso_prey):
+    axes[i_pso_prey, 0].plot(pso_prey.list_of_swarm_best_value, 'b.', label='Training value')
+    axes[i_pso_prey, 1].plot(pso_prey.list_of_validation_results, 'r.', label='Validation value')
+
+axes[0, 0].set_title('Fitness value for preys')
+
+list_of_pso_pred = pso_data['list_of_pso_pred']
+for i_pso_pred, pso_pred in enumerate(list_of_pso_pred):
+    axes[i_pso_pred, 2].plot(pso_pred.list_of_swarm_best_value, 'b.', label='Training value')
+    axes[i_pso_pred, 3].plot(pso_pred.list_of_validation_results, 'r.', label='Validation value')
+
+axes[0, 1].set_title('Fitness value for predators')
+
+plt.savefig('FitnessPlots.png')
+for i in range(len(pso_prey.list_of_aquarium)):
+    aquarium_1 = pso_prey.list_of_aquarium[i]
+    aquarium_1.pred_brain.update_brain(pso_prey.swarm_best_position)
+    aquarium_1.set_videoutput('last_trained_prey_aq%s.mp4'%i)
+    print(aquarium_1.run_simulation())
+    aquarium_1 = pso_pred.list_of_aquarium[i]
+    aquarium_1.pred_brain.update_brain(pso_pred.swarm_best_position)
+    aquarium_1.set_videoutput('last_trained_pred_aq%s.mp4'%i)
+
+    print(aquarium_1.run_simulation())
