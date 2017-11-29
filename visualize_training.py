@@ -8,22 +8,23 @@ with open('TrainingData.p', 'rb') as f:
 
 list_of_pso_prey = pso_data['list_of_pso_prey']
 
-fig, axes = plt.subplots(nrows=len(list_of_pso_prey), ncols=4)
+fig, axes = plt.subplots(nrows=len(list_of_pso_prey), ncols=2)
 
 for i_pso_prey, pso_prey in enumerate(list_of_pso_prey):
-    axes[i_pso_prey, 0].plot(pso_prey.list_of_swarm_best_value, 'b.', label='Training value')
-    axes[i_pso_prey, 1].plot(pso_prey.list_of_validation_results, 'r.', label='Validation value')
+    axes[i_pso_prey, 0].plot(pso_prey.list_of_swarm_best_value, 'b', label='Training value')
+    axes[i_pso_prey, 0].plot(pso_prey.list_of_validation_results, 'r', label='Validation value')
 
 axes[0, 0].set_title('Fitness value for preys')
 
 list_of_pso_pred = pso_data['list_of_pso_pred']
 for i_pso_pred, pso_pred in enumerate(list_of_pso_pred):
-    axes[i_pso_pred, 2].plot(pso_pred.list_of_swarm_best_value, 'b.', label='Training value')
-    axes[i_pso_pred, 3].plot(pso_pred.list_of_validation_results, 'r.', label='Validation value')
+    axes[i_pso_pred, 1].plot(pso_pred.list_of_swarm_best_value, 'b', label='Training value')
+    axes[i_pso_pred, 1].plot(pso_pred.list_of_validation_results, 'r', label='Validation value')
 
 axes[0, 1].set_title('Fitness value for predators')
-
-plt.savefig('FitnessPlots.png')
+plt.show()
+#plt.savefig('FitnessPlots.png')
+"""
 for i in range(len(pso_prey.list_of_aquarium)):
     aquarium_1 = pso_prey.list_of_aquarium[i]
     aquarium_1.pred_brain.update_brain(pso_prey.swarm_best_position)
@@ -34,3 +35,4 @@ for i in range(len(pso_prey.list_of_aquarium)):
     aquarium_1.set_videoutput('last_trained_pred_aq%s.mp4'%i)
 
     print(aquarium_1.run_simulation())
+"""
