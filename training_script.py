@@ -28,7 +28,7 @@ try:
             pso_prey = PSO(aquarium_parameters=aquarium_parameters, train_prey=True)
 
         pso_prey.run_pso()
-        best_prey_brain = pso_prey.swarm_best_position
+        best_prey_brain = pso_prey.get_particle_position_with_best_val_fitness()
 
         list_of_pso_prey.append(pso_prey)
 
@@ -38,7 +38,7 @@ try:
         for i_aquarium in pso_pred.list_of_aquarium:
             i_aquarium.prey_brain.update_brain(best_prey_brain)
         pso_pred.run_pso()
-        best_pred_brain = pso_pred.swarm_best_position
+        best_pred_brain = pso_pred.get_particle_position_with_best_val_fitness()
 
         list_of_pso_pred.append(pso_pred)
 except KeyboardInterrupt:
