@@ -7,7 +7,11 @@ import matplotlib
 import math 
 
 import matplotlib.pyplot as plt
-#import matplotlib.animation as manimation
+
+try:
+    import matplotlib.animation as manimation
+except ImportError:
+    pass 
 
 from Brain import Brain, randomBrain
 
