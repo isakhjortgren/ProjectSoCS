@@ -271,14 +271,16 @@ class aquarium(object):
 
             off_boundary = (self.size_X < self.fish_xy[:, 0]) | (self.fish_xy[:, 0] < 0) | \
                            (self.size_Y < self.fish_xy[:, 1]) | (self.fish_xy[:, 0] < 0)
-            kill_prey = off_boundary[self.interval_pred] = False
-            kill_prey = np.array(kill_prey, dtype = int)
-            self.fish_xy = np.delete(self.fish_xy, kill_prey, axis=0)
-            self.fish_vel = np.delete(self.fish_vel, kill_prey, axis=0)
-            self.acc_fish = np.delete(self.acc_fish, kill_prey, axis=0)
-            nbr_killed = kill_prey.sum()
-            for i in range(nbr_killed):
-                self.interval_prey.pop()
+            off_boundary[self.interval_pred] = False  # don't kill sharks
+            if True in off_boundary:
+                off_boundary, = np.where(off_boundary)
+                self.fish_xy = np.delete(self.fish_xy, off_boundary, axis=0)
+                self.fish_vel = np.delete(self.fish_vel, off_boundary, axis=0)
+                self.acc_fish = np.delete(self.acc_fish, off_boundary, axis=0)
+                nbr_killed = len(off_boundary)
+                for i in range(nbr_killed):
+                    self.interval_prey.pop()
+                    self.eaten += 1
 
         # Correct for max velocities
         vel_magnitudes = np.linalg.norm(self.fish_vel,axis=1)
