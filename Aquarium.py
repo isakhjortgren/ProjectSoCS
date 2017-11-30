@@ -270,7 +270,7 @@ class aquarium(object):
                     self.fish_vel[i, 1] = 0
 
             off_boundary = (self.size_X < self.fish_xy[:, 0]) | (self.fish_xy[:, 0] < 0) | \
-                           (self.size_Y < self.fish_xy[:, 1]) | (self.fish_xy[:, 0] < 0)
+                           (self.size_Y < self.fish_xy[:, 1]) | (self.fish_xy[:, 1] < 0)
             off_boundary[self.interval_pred] = False  # don't kill sharks
             if True in off_boundary:
                 off_boundary, = np.where(off_boundary)
@@ -404,10 +404,10 @@ if __name__ == '__main__':
     aquarium_paramters = {'nbr_of_prey': 20, 'nbr_of_pred': 5, 'size_X': 5, 'size_Y': 5, 'max_speed_prey': 0.07,
                           'max_speed_pred': 0.1, 'max_acc_prey': 0.1, 'max_acc_pred': 0.1, 'eat_radius': 0.1,
                           'weight_range': 5, 'nbr_of_hidden_neurons': 10, 'nbr_of_outputs': 2,
-                          'visibility_range': 1.5, 'input_set': ["enemy_pos","wall"] }
+                          'visibility_range': 1.5, 'input_set': ["enemy_pos","wall"], 'safe_boundary':False }
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_paramters)
-   # a.set_videoutput('test.mp4',fps=25)
+    a.set_videoutput('test.mp4',fps=25)
     print(a.run_simulation())
     print("LOL")
