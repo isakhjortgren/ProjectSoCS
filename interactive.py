@@ -4,6 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 random = np.random.random
+import pickle
 
 from Aquarium import aquarium
 
@@ -13,8 +14,12 @@ from Aquarium import aquarium
 
 
 class PlotHandler:
-    def __init__(self,figure,aq_par):
+    def __init__(self,figure,aq_par,pred_brain,prey_brain):
         self.aq = aquarium(**aq_par)
+        
+        self.aq.pred_brain.update_brain(pred_brain)
+        self.aq.prey_brain.update_brain(prey_brain)
+
         self.figure = figure
 
         self.ax = self.figure.add_subplot(111)
@@ -38,20 +43,32 @@ class PlotHandler:
         self.circle_pressed = [False]*(len(self.aq.fish_xy_start))
 
         # Setup the lines to show input vectors
+        line_color = ["blue","orange" ]
+
         self.input_arrows = []
+        nbr_of_inputs = self.aq.pred_brain.nbr_of_inputs//2
+        if "wall" in self.aq.inputs:
+            nbr_of_inputs -= 1
         for i in range(N):
             arrow_row = []
-            for j in range(self.aq.pred_brain.nbr_of_inputs//2):
-                line, = plt.plot([], [],'b')
+            for j in range(nbr_of_inputs):
+                line, = plt.plot([], [],color=line_color[j])
                 arrow_row.append(line)
                 self.ax.add_line(line)
             self.input_arrows.append(arrow_row)
 
+        self.acc_arrows = []
+        for i in range(N):
+            line, = plt.plot([], [],'k--')
+            self.acc_arrows.append(line)
+            self.ax.add_line(line)
+            
 
         self.ax.set_ylim([0,self.aq.size_Y])
         self.ax.set_xlim([0,self.aq.size_X])
 
         self.connect()
+        self.update_arrows()
 
     def connect(self):
         # Connect to events of plot
@@ -61,7 +78,7 @@ class PlotHandler:
             'button_release_event', self.on_release)
         self.cidmotion = self.figure.canvas.mpl_connect(
             'motion_notify_event', self.on_motion)
-        self.update_arrows()
+        
     def on_press(self, event):
         'on button press we will see if the mouse is over us and store some data'
 
@@ -79,6 +96,7 @@ class PlotHandler:
 
         self.circle_pressed[i]=True
 
+
         x0, y0 = self.circles[i].center
         self.press = x0, y0, event.xdata, event.ydata
         self.update_arrows()
@@ -95,12 +113,11 @@ class PlotHandler:
 
         self.update_arrows()
 
-
-
     def on_release(self, event):
         'on release we reset the press data'
         self.circle_pressed=[False]*len(self.circle_pressed)
         self.update_arrows()
+    
     def update_arrows(self):
         #Set fish_xy and calculate input
         for i,circ in enumerate(self.circles):
@@ -118,6 +135,19 @@ class PlotHandler:
                 dy = inputs[i,j*2+1]
                 line.set_data([x0,x0+dx], [y0,y0+dy])
 
+        for i,line in enumerate(self.acc_arrows):
+            x0 = self.circles[i].center[0]
+            y0 = self.circles[i].center[1]       
+
+            if i in self.aq.interval_pred:
+                dx,dy = self.aq.pred_brain.make_decision(inputs[i,:])
+
+            
+            elif i in self.aq.interval_prey:
+                dx,dy = self.aq.prey_brain.make_decision(inputs[i,:])
+            
+            line.set_data([x0,x0+dx], [y0,y0+dy])
+
         #draw
         self.figure.canvas.draw()
 
@@ -128,21 +158,34 @@ class PlotHandler:
         self.figure.canvas.mpl_disconnect(self.cidmotion)
 
 
+with open('TrainingData.p', 'rb') as f:
+    pso_data = pickle.load(f)
 
+pred_brain = pso_data["list_of_pso_prey"][-1]
+prey_brain = pso_data["list_of_pso_pred"][-1]
 
-fig = plt.figure()
+inputs = ["enemy_pos","friend_pos","wall"]
+
+if len(inputs)*2 != pred_brain.nbr_of_inputs:
+    raise RuntimeError("Inputs doesn't match, sorry for weird bugg")
+
 aquarium_paramters = {'nbr_of_prey': None, 'nbr_of_pred': None, 'size_X': None, 'size_Y': None, 'max_speed_prey': 0.07,
                           'max_speed_pred': 0.1, 'max_acc_prey': 0.1, 'max_acc_pred': 0.1, 'eat_radius': 0.1,
-                          'weight_range': 5, 'nbr_of_hidden_neurons': 10, 'nbr_of_outputs': 2,
+                          'weight_range': 5, 'nbr_of_hidden_neurons': None, 'nbr_of_outputs': None,
                           'visibility_range': 1.5, 'input_set': None }
 aquarium_paramters["nbr_of_prey"] = 4
 aquarium_paramters["nbr_of_pred"] = 2
 aquarium_paramters["size_X"] = 4
 aquarium_paramters["size_Y"] = 4
-aquarium_paramters["input_set"] = ["enemy_pos"]
+aquarium_paramters["input_set"] = inputs
+aquarium_paramters["nbr_of_outputs"] = pred_brain.nbr_of_outputs
+aquarium_paramters["nbr_of_hidden_neurons"] = pred_brain.nbr_of_hidden_neurons
 
 
-ph = PlotHandler(fig,aquarium_paramters)
+
+fig = plt.figure()
+ph = PlotHandler(fig,aquarium_paramters,pred_brain.swarm_best_position , prey_brain.swarm_best_position)
+
 
 print("Let the Show begin")
 plt.show()
