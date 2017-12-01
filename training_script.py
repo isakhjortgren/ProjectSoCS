@@ -11,7 +11,7 @@ aquarium_parameters = {'nbr_of_prey': 15, 'nbr_of_pred': 2, 'size_X': 1, 'size_Y
 
 list_of_pso_prey = list()
 list_of_pso_pred = list()
-nbr_of_training_alternations = 2
+nbr_of_training_alternations = 1
 
 
 try:
@@ -19,7 +19,6 @@ try:
         print('Training preys, iteration: ', i+1, ' out of ', nbr_of_training_alternations)
         # Train prey
         if i != 0:
-            aquarium_parameters['rand_walk_brain_set'] = []
             pso_prey = PSO(aquarium_parameters=aquarium_parameters, train_prey=True)
             for i_aquarium in pso_prey.list_of_aquarium:
                 i_aquarium.pred_brain.update_brain(best_pred_brain)
@@ -30,6 +29,7 @@ try:
             pso_prey = PSO(aquarium_parameters=aquarium_parameters, train_prey=True)
 
         pso_prey.run_pso()
+        aquarium_parameters['rand_walk_brain_set'] = []
         best_prey_brain = pso_prey.get_particle_position_with_best_val_fitness()
 
         list_of_pso_prey.append(pso_prey)
