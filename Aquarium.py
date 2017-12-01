@@ -69,13 +69,15 @@ class aquarium(object):
                             *np.matrix([[size_X, 0], [0,size_Y]])
         
         self.brain_input = None  #TODO: Only for debug purposes 
-        self.interval_pred = None
-        self.interval_prey = None
-        self.eaten = None 
 
-        self.fish_xy = None
-        self.fish_vel = None
-        self.acc_fish = None
+        self.interval_pred = list(range(self.nbr_of_pred))
+        self.interval_prey = list(range(self.nbr_of_pred, self.nbr_of_prey + self.nbr_of_pred))
+
+        self.eaten = None
+
+        self.fish_xy = np.copy(self.fish_xy_start)
+        self.fish_vel = np.zeros(self.fish_xy_start.shape)
+        self.acc_fish = np.zeros(self.fish_xy_start.shape)
 
         self.x_diff = None
         self.y_diff = None
@@ -113,7 +115,6 @@ class aquarium(object):
         inv_vel_distances = 1/(vel_distances+0.000000001)
 
         ## PREYS: ##
-        set(["friend_pos","friend_vel","enemy_pos","enemy_vel","wall"])
 
         if "friend_pos" in self.inputs:
             # Prey to Prey: X & Y center of mass
