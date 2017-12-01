@@ -5,6 +5,8 @@ import multiprocessing
 from joblib import Parallel, delayed
 nrb_of_cores = multiprocessing.cpu_count()
 
+import time
+
 
 class PSO(object):
 
@@ -80,8 +82,29 @@ class PSO(object):
         return self.list_of_swarm_best_positions[index_with_best_val_fitness]
 
     def run_pso(self):
+        
+        start_time = time.time()
+
         for i_iteration in range(self.nbr_of_iterations):
-            print("Epoch number", i_iteration+1,"out of", self.nbr_of_iterations)
+            
+            elapsed_sec = time.time()-start_time
+
+            if elapsed_sec<1:
+                time_string = ""
+            else:
+                time_per_iteration = elapsed_sec/i_iteration
+                iterations_left = self.nbr_of_iterations - i_iteration
+                ETA_sec_tot = time_per_iteration*iterations_left
+                ETA_h = int(ETA_sec_tot//3600)
+                ETA_min = int((ETA_sec_tot-3600*ETA_h) // 60)
+                ETA_sec = int(floor(fETA_sec_tot-3600*ETA_h-60*ETA_min))
+
+                time_string = "ETA: " +str(ETA_h) +"h " +str(ETA_min) + "m " + str(ETA_sec)
+                
+
+            print("Epoch number", i_iteration+1,"out of", self.nbr_of_iterations, time_string)
+
+
 
             particle_values = np.zeros(self.nbr_of_particles)
             for i_particle in range(self.nbr_of_particles):
