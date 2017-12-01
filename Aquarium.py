@@ -192,7 +192,7 @@ class aquarium(object):
         
         self.brain_input = self.calculate_inputs()
         
-        #Get descisions and correct for max acceleration
+        #Get descisions and correct for max acceleration #TODO make faster with matrix operation. use map()
         for i in self.interval_prey:
             acc_temp = self.prey_brain.make_decision(self.brain_input[i,:])
             norm_acc = np.linalg.norm(acc_temp)
@@ -285,13 +285,43 @@ class aquarium(object):
                 self.fish_xy = np.delete(self.fish_xy, off_boundary, axis=0)
                 self.fish_vel = np.delete(self.fish_vel, off_boundary, axis=0)
                 self.acc_fish = np.delete(self.acc_fish, off_boundary, axis=0)
+                
                 nbr_killed = len(off_boundary)
+                self.eaten += nbr_killed
+                self.prey_score -= nbr_killed / (time + self.MAX_TIME)
                 for i in range(nbr_killed):
                     self.interval_prey.pop()
-                    self.eaten += 1
-                    self.prey_score -= 1 / (time + self.MAX_TIME)
 
-        # Correct for max velocities
+                print(nbr_killed,"fishes off boundary")
+
+                    
+
+
+
+        # Check shark eats fish
+        N = len(self.fish_xy)
+        n_preds = self.interval_pred[-1] +1
+        n_preys = len(self.interval_prey)
+        x_diff = np.column_stack([self.fish_xy[n_preds:,0]]*n_preds) - np.row_stack([self.fish_xy[:n_preds,0]]*n_preys) 
+        y_diff = np.column_stack([self.fish_xy[n_preds:,1]]*n_preds) - np.row_stack([self.fish_xy[:n_preds,1]]*n_preys)
+
+        eaten_indicies =    (abs(x_diff)<self.eat_radius) & (abs(y_diff)<self.eat_radius) 
+        #eaten_indicies = np.column_stack(np.where(eaten_indicies))
+
+        #if len(eaten_indicies)>0:
+        if True in eaten_indicies:
+            eaten_indicies = np.column_stack(np.where(eaten_indicies))
+            indices_of_eaten_fish = eaten_indicies[:,0]+n_preds
+            self.fish_xy = np.delete(self.fish_xy, indices_of_eaten_fish, axis=0)
+            self.fish_vel = np.delete(self.fish_vel, indices_of_eaten_fish, axis=0)
+            self.acc_fish = np.delete(self.acc_fish, indices_of_eaten_fish, axis=0)
+            for i in range(len(indices_of_eaten_fish)):
+                self.interval_prey.pop()
+                self.eaten += 1
+                self.pred_score += 1/(time + self.MAX_TIME)
+                self.prey_score -= 1/(time + self.MAX_TIME)
+
+        # Correct for max velocities # TODO: increase speed with matrix operations
         vel_magnitudes = np.linalg.norm(self.fish_vel,axis=1)
         for i in self.interval_prey:
             if vel_magnitudes[i] > self.max_vel_prey:
@@ -299,21 +329,6 @@ class aquarium(object):
         for i in self.interval_pred:
             if vel_magnitudes[i] > self.max_vel_pred:
                 self.fish_vel[i] = self.max_vel_pred * self.fish_vel[i] / vel_magnitudes[i]
-
-        # Check shark eats fish
-        #TODO: speed this up with matrix operation 
-        for shark in self.interval_pred:
-            for prey in self.interval_prey:
-                if self.eat_radius > np.linalg.norm(self.fish_xy[shark,:]-self.fish_xy[prey,:]):
-                    self.eaten += 1
-                    self.fish_xy    = np.delete(self.fish_xy, prey, axis=0)
-                    self.fish_vel   = np.delete(self.fish_vel, prey, axis=0)
-                    self.acc_fish   = np.delete(self.acc_fish, prey, axis=0)                   
-                    self.interval_prey.pop()
-                    self.pred_score += 1/(time + self.MAX_TIME)
-                    self.prey_score -= 1/(time + self.MAX_TIME)
-                    break #A shark can only eat one fish per time step.
-
 
     def set_videoutput(self, filename, fps=15, dpi=100):
         if self.video_enabled :
@@ -411,13 +426,13 @@ class aquarium(object):
 
 if __name__ == '__main__':
 
-    aquarium_paramters = {'nbr_of_prey': 20, 'nbr_of_pred': 5, 'size_X': 5, 'size_Y': 5, 'max_speed_prey': 0.07,
+    aquarium_paramters = {'nbr_of_prey': 7, 'nbr_of_pred': 3, 'size_X': 1, 'size_Y': 1, 'max_speed_prey': 0.07,
                           'max_speed_pred': 0.1, 'max_acc_prey': 0.1, 'max_acc_pred': 0.1, 'eat_radius': 0.1,
                           'weight_range': 5, 'nbr_of_hidden_neurons': 10, 'nbr_of_outputs': 2,
                           'visibility_range': 1.5, 'input_set': ["enemy_pos","wall"], 'safe_boundary':False }
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_paramters)
-    a.set_videoutput('test.mp4',fps=25)
+    #a.set_videoutput('test.mp4',fps=25)
     print(a.run_simulation())
     print("LOL")
