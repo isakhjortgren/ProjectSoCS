@@ -6,6 +6,7 @@ import matplotlib
 import time
 
 import math 
+import time
 
 import matplotlib.pyplot as plt
 try:
@@ -446,4 +447,6 @@ if __name__ == '__main__':
     #a.set_videoutput('test.mp4',fps=25)
     start_time = time.time()
     print(a.run_simulation())
+
     print("LOL in: ", round(time.time()-start_time,3), "s")
+
