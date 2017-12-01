@@ -31,3 +31,6 @@ class randomBrain(Brain):
     def make_decision(self, total_inputs):
         return (np.random.random((1,2))-0.5)*2
 
+    def update_brain(self, weight_array):
+        raise NotImplementedError('Do not fucking train random walk sharks!!!')
+
