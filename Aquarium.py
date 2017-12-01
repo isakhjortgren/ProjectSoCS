@@ -3,6 +3,7 @@ import numpy.matlib
 random = np.random.random
 
 import matplotlib
+import time
 
 import math 
 
@@ -440,5 +441,6 @@ if __name__ == '__main__':
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_paramters)
     #a.set_videoutput('test.mp4',fps=25)
+    start_time = time.time()
     print(a.run_simulation())
-    print("LOL")
+    print("LOL in: ", round(time.time()-start_time,3), "s")
