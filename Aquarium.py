@@ -106,16 +106,20 @@ class aquarium(object):
         x_diff = self.x_diff 
         y_diff = self.y_diff
 
-        v_x_diff = np.column_stack([self.fish_vel[:,0]]*N) - np.row_stack([self.fish_vel[:,0]]*N)
-        v_y_diff = np.column_stack([self.fish_vel[:,1]]*N) - np.row_stack([self.fish_vel[:,1]]*N)
+        
         
         ## Derived matricis ##
         distances = np.sqrt(x_diff**2 + y_diff**2)
         inv_distances = 1/(distances+0.000000001)
         neighbr_mat = self.neighbourhood(distances)
 
-        vel_distances = np.sqrt(v_x_diff**2 + v_y_diff**2)
-        inv_vel_distances = 1/(vel_distances+0.000000001)
+
+        if "friend_vel" in self.inputs or "enemy_vel" in self.inputs:
+            v_x_diff = np.column_stack([self.fish_vel[:,0]]*N) - np.row_stack([self.fish_vel[:,0]]*N)
+            v_y_diff = np.column_stack([self.fish_vel[:,1]]*N) - np.row_stack([self.fish_vel[:,1]]*N)
+
+            vel_distances = np.sqrt(v_x_diff**2 + v_y_diff**2)
+            inv_vel_distances = 1/(vel_distances+0.000000001)
 
         ## PREYS: ##
 
