@@ -81,7 +81,7 @@ class PSO(object):
 
     def run_pso(self):
         for i_iteration in range(self.nbr_of_iterations):
-            print(f'Epoch number {i_iteration+1} out of {self.nbr_of_iterations}')
+            print("Epoch number", i_iteration+1,"out of", self.nbr_of_iterations)
 
             particle_values = np.zeros(self.nbr_of_particles)
             for i_particle in range(self.nbr_of_particles):
