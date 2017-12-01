@@ -81,6 +81,9 @@ class aquarium(object):
 
         self.x_diff = None
         self.y_diff = None
+        self.pred_score = None
+        self.prey_score = None
+        self.MAX_TIME = None
 
     def neighbourhood(self, distances):
         return np.exp(-distances**2/(2*self.visibility_range**2)) /self.visibility_range 
@@ -181,7 +184,7 @@ class aquarium(object):
         return return_matrix
 
 
-    def timestep(self,dt):
+    def timestep(self, dt, time):
         
         self.brain_input = self.calculate_inputs()
         
@@ -282,6 +285,7 @@ class aquarium(object):
                 for i in range(nbr_killed):
                     self.interval_prey.pop()
                     self.eaten += 1
+                    self.prey_score -= 1 / (time + self.MAX_TIME)
 
         # Correct for max velocities
         vel_magnitudes = np.linalg.norm(self.fish_vel,axis=1)
@@ -302,6 +306,8 @@ class aquarium(object):
                     self.fish_vel   = np.delete(self.fish_vel, prey, axis=0)
                     self.acc_fish   = np.delete(self.acc_fish, prey, axis=0)                   
                     self.interval_prey.pop()
+                    self.pred_score += 1/(time + self.MAX_TIME)
+                    self.prey_score -= 1/(time + self.MAX_TIME)
                     break #A shark can only eat one fish per time step.
 
 
@@ -322,7 +328,7 @@ class aquarium(object):
 
         self.plot_prey, = plt.plot([], [], 'go', ms=5)
         self.plot_pred, = plt.plot([], [], 'ro', ms=5)
-        self.plot_text = self.plot_ax.text(0,0.9, "Fish eaten = "+str(self.eaten))
+        self.plot_text = self.plot_ax.text(0,0.9, "Fish killed = "+str(self.eaten))
 
         self.input_to_plot = len(self.inputs)
         if "wall" in self.inputs:
@@ -351,7 +357,7 @@ class aquarium(object):
         dt = 0.25*  min(self.eat_radius, self.collision_len) / max(self.max_vel_prey, self.max_vel_pred)
         time = 0
 
-        MAX_TIME = 100
+        self.MAX_TIME = 100
         HALF_NBR_FISHES = len(self.fish_xy_start) // 2
 
         self.fish_xy = np.copy(self.fish_xy_start )
@@ -359,25 +365,24 @@ class aquarium(object):
         self.eaten = 0
         self.fish_vel = np.zeros(self.fish_xy_start.shape)
         self.acc_fish = np.zeros(self.fish_xy_start.shape)
-
+        self.pred_score = 0
+        self.prey_score = 0
         self.interval_pred = list(range(self.nbr_of_pred))
         self.interval_prey = list(range(self.nbr_of_pred, self.nbr_of_prey+self.nbr_of_pred))
 
         if self.video_enabled:
             with self.video_writer.saving(self.fig, self.video_filename, self.video_dpi):
                 #TODO: Decide max_iterations
-                while time < MAX_TIME and self.eaten <= HALF_NBR_FISHES:
-                    self.timestep(dt)
+                while time < self.MAX_TIME and self.eaten <= HALF_NBR_FISHES:
+                    self.timestep(dt, time)
                     self.__grab_Frame_()
                     time += dt
         else:
-            while time < MAX_TIME and self.eaten <= HALF_NBR_FISHES:
+            while time < self.MAX_TIME and self.eaten <= HALF_NBR_FISHES:
                 self.timestep(dt)
                 time += dt
 
-
-        score = self.eaten/time
-        return (-score, score) #Prey score is negative pred score
+        return (self.prey_score, self.pred_score) #Prey score is negative pred score
 
 
     def __grab_Frame_(self):
