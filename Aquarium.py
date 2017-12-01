@@ -321,6 +321,8 @@ class aquarium(object):
                 self.pred_score += 1/(time + self.MAX_TIME)
                 self.prey_score -= 1/(time + self.MAX_TIME)
 
+            print(len(indices_of_eaten_fish), "fish eaten")
+
         # Correct for max velocities # TODO: increase speed with matrix operations
         vel_magnitudes = np.linalg.norm(self.fish_vel,axis=1)
         for i in self.interval_prey:
@@ -421,18 +423,18 @@ class aquarium(object):
             
             self.plot_pred_arrow[i].set_data(x_data, y_data)
 
-        self.plot_text.set_text("Fish eaten = "+str(self.eaten))
+        self.plot_text.set_text("Fish killed = "+str(self.eaten))
         self.video_writer.grab_frame()
 
 if __name__ == '__main__':
 
-    aquarium_paramters = {'nbr_of_prey': 7, 'nbr_of_pred': 3, 'size_X': 1, 'size_Y': 1, 'max_speed_prey': 0.07,
-                          'max_speed_pred': 0.1, 'max_acc_prey': 0.1, 'max_acc_pred': 0.1, 'eat_radius': 0.1,
+    aquarium_paramters = {'nbr_of_prey': 15, 'nbr_of_pred': 4, 'size_X': 1, 'size_Y': 1, 'max_speed_prey': 0.1,
+                          'max_speed_pred': 0.15, 'max_acc_prey': 0.1, 'max_acc_pred': 0.15, 'eat_radius': 0.07,
                           'weight_range': 5, 'nbr_of_hidden_neurons': 10, 'nbr_of_outputs': 2,
                           'visibility_range': 1.5, 'input_set': ["enemy_pos","wall"], 'safe_boundary':False }
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_paramters)
-    #a.set_videoutput('test.mp4',fps=25)
+    a.set_videoutput('test.mp4',fps=25)
     print(a.run_simulation())
     print("LOL")
