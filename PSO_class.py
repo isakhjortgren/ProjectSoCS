@@ -89,18 +89,20 @@ class PSO(object):
             
             elapsed_sec = time.time()-start_time
 
-            if elapsed_sec<1:
-                time_string = ""
-            else:
-                time_per_iteration = elapsed_sec/i_iteration
-                iterations_left = self.nbr_of_iterations - i_iteration
-                ETA_sec_tot = time_per_iteration*iterations_left
-                ETA_h = int(ETA_sec_tot//3600)
-                ETA_min = int((ETA_sec_tot-3600*ETA_h) // 60)
-                ETA_sec = int(floor(fETA_sec_tot-3600*ETA_h-60*ETA_min))
+            try:
+                if elapsed_sec<1:
+                    time_string = ""
+                else:
+                    time_per_iteration = elapsed_sec/i_iteration
+                    iterations_left = self.nbr_of_iterations - i_iteration
+                    ETA_sec_tot = time_per_iteration*iterations_left
+                    ETA_h = int(ETA_sec_tot//3600)
+                    ETA_min = int((ETA_sec_tot-3600*ETA_h) // 60)
+                    ETA_sec = int(ETA_sec_tot-3600*ETA_h-60*ETA_min)
 
-                time_string = "ETA: " +str(ETA_h) +"h " +str(ETA_min) + "m " + str(ETA_sec)
-                
+                    time_string = "ETA: " +str(ETA_h) +"h " +str(ETA_min) + "m " + str(ETA_sec) +"s"
+            except: 
+                time_string = "ETA calculation crashed"  
 
             print("Epoch number", i_iteration+1,"out of", self.nbr_of_iterations, time_string)
 
