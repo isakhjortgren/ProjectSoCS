@@ -5,6 +5,7 @@ random = np.random.random
 import matplotlib
 
 import math 
+import time
 
 import matplotlib.pyplot as plt
 try:
@@ -411,13 +412,14 @@ class aquarium(object):
 
 if __name__ == '__main__':
 
-    aquarium_paramters = {'nbr_of_prey': 20, 'nbr_of_pred': 5, 'size_X': 5, 'size_Y': 5, 'max_speed_prey': 0.07,
-                          'max_speed_pred': 0.1, 'max_acc_prey': 0.1, 'max_acc_pred': 0.1, 'eat_radius': 0.1,
+    aquarium_paramters = {'nbr_of_prey': 25, 'nbr_of_pred': 7, 'size_X': 3, 'size_Y': 3, 'max_speed_prey': 0.1,
+                          'max_speed_pred': 0.15, 'max_acc_prey': 0.1, 'max_acc_pred': 0.15, 'eat_radius': 0.07,
                           'weight_range': 5, 'nbr_of_hidden_neurons': 10, 'nbr_of_outputs': 2,
                           'visibility_range': 1.5, 'input_set': ["enemy_pos","wall"], 'safe_boundary':False }
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_paramters)
-    a.set_videoutput('test.mp4',fps=25)
+    #a.set_videoutput('test.mp4',fps=25)
+    start_time = time.time()
     print(a.run_simulation())
-    print("LOL")
+    print("LOL in: ", round(time.time()-start_time,3), "s")
