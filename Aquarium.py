@@ -197,21 +197,17 @@ class aquarium(object):
         self.brain_input = self.calculate_inputs()
         
         #Get descisions and correct for max acceleration #TODO make faster with matrix operation. use map()
-        for i in self.interval_prey:
-            acc_temp = self.prey_brain.make_decision(self.brain_input[i,:])
-            norm_acc = np.linalg.norm(acc_temp)
-            if norm_acc>1:
-                self.acc_fish[i] = self.max_acc_prey * acc_temp / norm_acc
-            else:
-                self.acc_fish[i] = self.max_acc_prey * acc_temp
-
-        for i in self.interval_pred:
-            acc_temp = self.pred_brain.make_decision(self.brain_input[i, :])
-            norm_acc = np.linalg.norm(acc_temp)
-            if norm_acc > 1:
-                self.acc_fish[i] = self.max_acc_pred * acc_temp / norm_acc
-            else:
-                self.acc_fish[i] = self.max_acc_pred * acc_temp
+        self.acc_fish[self.interval_pred] = np.array(list(map(self.pred_brain.make_decision, self.brain_input[self.interval_pred])))
+        self.acc_fish[self.interval_prey] = np.array(list(map(self.prey_brain.make_decision, self.brain_input[self.interval_prey])))
+        
+        acc_norm = np.linalg.norm(self.acc_fish,axis=1)
+        
+        self.acc_fish *= self.max_acc[:,np.newaxis]
+        
+        
+        indices = np.where(acc_norm>1)
+        if len(indices)>0:
+            self.acc_fish[indices] =  self.acc_fish[indices] / acc_norm[indices,np.newaxis]
 
         # Take care of collisions
         N = len(self.fish_xy)
@@ -252,19 +248,21 @@ class aquarium(object):
         # Effect of boundary, fish either stops or dies
         if self.safe_boundary:
             # Safe boundary, need to correct for reflective boundary
-            for i in range(len(self.fish_xy)):
-                if self.fish_xy[i, 0] < 0:
-                    self.fish_xy[i, 0] = (random()) / (self.size_X * 500)
-                    self.fish_vel[i, 0] = 0
-                elif self.fish_xy[i, 0] > self.size_X:
-                    self.fish_xy[i, 0] = self.size_X - (random()) / (self.size_X * 1000)
-                    self.fish_vel[i, 0] = 0
-                if self.fish_xy[i, 1] < 0:
-                    self.fish_xy[i, 1] = (random()) / (self.size_Y * 500)
-                    self.fish_vel[i, 1] = 0
-                elif self.fish_xy[i, 1] > self.size_Y:
-                    self.fish_xy[i, 1] = self.size_Y - (random()) / (self.size_Y * 1000)
-                    self.fish_vel[i, 1] = 0
+            indices = np.where(self.fish_xy[:,0] < 0)
+            self.fish_xy[indices,0] =   random(len(indices)) / (self.size_X * 500)
+            self.fish_vel[indices,0] =  0
+
+            indices = np.where(self.fish_xy[:,0] > self.size_X)
+            self.fish_xy[indices,0] =   self.size_X - random(len(indices)) / (self.size_X * 500)
+            self.fish_vel[indices,0] =  0
+
+            indices = np.where(self.fish_xy[:,0] < 0)
+            self.fish_xy[indices,1] =   random(len(indices)) / (self.size_Y * 500)
+            self.fish_vel[indices,1] =  0
+
+            indices = np.where(self.fish_xy[:,0] > self.size_Y)
+            self.fish_xy[indices,1] =   self.size_X - random(len(indices)) / (self.size_Y * 500)
+            self.fish_vel[indices,1] =  0
         else:
             # Sharks stop at boundary, fishes die
             for i in self.interval_pred:
@@ -387,6 +385,10 @@ class aquarium(object):
                             np.ones(self.nbr_of_pred)*self.max_vel_pred, \
                             np.ones(self.nbr_of_prey)*self.max_vel_prey))
 
+        self.max_acc = np.concatenate((\
+                            np.ones(self.nbr_of_pred)*self.max_acc_pred, \
+                            np.ones(self.nbr_of_prey)*self.max_acc_prey))
+
         if self.video_enabled:
             with self.video_writer.saving(self.fig, self.video_filename, self.video_dpi):
                 #TODO: Decide max_iterations
@@ -422,10 +424,11 @@ class aquarium(object):
         self.plot_text.set_text("Fish killed = "+str(self.eaten))
         self.video_writer.grab_frame()
     def remove_fishes(self,indices):
-        self.fish_xy = np.delete(self.fish_xy, indices, axis=0)
+        self.fish_xy  = np.delete(self.fish_xy,  indices, axis=0)
         self.fish_vel = np.delete(self.fish_vel, indices, axis=0)
         self.acc_fish = np.delete(self.acc_fish, indices, axis=0)
         self.max_vels = np.delete(self.max_vels, indices, axis=0)
+        self.max_acc  = np.delete(self.max_acc,  indices, axis=0)
 
         self.eaten += len(indices)
         for i in range(len(indices)):
@@ -436,7 +439,7 @@ if __name__ == '__main__':
     aquarium_paramters = {'nbr_of_prey': 25, 'nbr_of_pred': 7, 'size_X': 3, 'size_Y': 3, 'max_speed_prey': 0.1,
                           'max_speed_pred': 0.15, 'max_acc_prey': 0.1, 'max_acc_pred': 0.15, 'eat_radius': 0.07,
                           'weight_range': 5, 'nbr_of_hidden_neurons': 10, 'nbr_of_outputs': 2,
-                          'visibility_range': 1.5, 'input_set': ["enemy_pos","wall"], 'safe_boundary':False }
+                          'visibility_range': 1.5, 'input_set': ["enemy_pos","wall"], 'safe_boundary':True }
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_paramters)
