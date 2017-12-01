@@ -164,15 +164,14 @@ with open('TrainingData.p', 'rb') as f:
 pred_brain = pso_data["list_of_pso_prey"][-1]
 prey_brain = pso_data["list_of_pso_pred"][-1]
 
-inputs = ["enemy_pos","friend_pos","wall"]
-
+inputs = prey_brain.aquarium_parameters['input_set']
 if len(inputs)*2 != pred_brain.nbr_of_inputs:
     raise RuntimeError("Inputs doesn't match, sorry for weird bugg")
 
 aquarium_paramters = {'nbr_of_prey': None, 'nbr_of_pred': None, 'size_X': None, 'size_Y': None, 'max_speed_prey': 0.07,
-                          'max_speed_pred': 0.1, 'max_acc_prey': 0.1, 'max_acc_pred': 0.1, 'eat_radius': 0.1,
-                          'weight_range': 5, 'nbr_of_hidden_neurons': None, 'nbr_of_outputs': None,
-                          'visibility_range': 1.5, 'input_set': None }
+                      'max_speed_pred': 0.1, 'max_acc_prey': 0.1, 'max_acc_pred': 0.1, 'eat_radius': 0.1,
+                      'weight_range': 5, 'nbr_of_hidden_neurons': None, 'nbr_of_outputs': None,
+                      'visibility_range': 1.5, 'input_set': None }
 aquarium_paramters["nbr_of_prey"] = 4
 aquarium_paramters["nbr_of_pred"] = 2
 aquarium_paramters["size_X"] = 4
