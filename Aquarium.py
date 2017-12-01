@@ -379,7 +379,7 @@ class aquarium(object):
                     time += dt
         else:
             while time < self.MAX_TIME and self.eaten <= HALF_NBR_FISHES:
-                self.timestep(dt)
+                self.timestep(dt, time)
                 time += dt
 
         return (self.prey_score, self.pred_score) #Prey score is negative pred score
