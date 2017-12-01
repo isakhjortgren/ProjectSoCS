@@ -12,7 +12,7 @@ list_of_pso_pred = pso_data['list_of_pso_pred']
 
 def visulaize_all_training_aquarium():
 
-    fig, axes = plt.subplots(nrows=len(list_of_pso_prey), ncols=2)
+    fig, axes = plt.subplots(nrows=max(len(list_of_pso_prey), 2), ncols=2)
 
     for i_pso_prey, pso_prey in enumerate(list_of_pso_prey):
         axes[i_pso_prey, 0].plot(pso_prey.list_of_swarm_best_value, 'b', label='Training value')
@@ -27,7 +27,7 @@ def visulaize_all_training_aquarium():
     axes[0, 1].set_title('Fitness value for predators')
 
     plt.savefig('FitnessPlots.png')
-
+    """
     for i in range(len(pso_prey.list_of_aquarium)):
         aquarium_1 = pso_prey.list_of_aquarium[i]
         best_prey_brain = pso_prey.get_particle_position_with_best_val_fitness()
@@ -40,15 +40,21 @@ def visulaize_all_training_aquarium():
         aquarium_1.set_videoutput('last_trained_pred_aq%s.mp4'%i)
 
         print(aquarium_1.run_simulation())
+    """
 
 def visulaize_one_aquarium(val_aquarium=0):
     pso_prey = list_of_pso_prey[-1]
     pso_pred = list_of_pso_pred[-1]
     aquarium_1 = pso_prey.list_of_validation_aquarium[val_aquarium]
-    aquarium_1.pred_brain.update_brain(pso_pred.swarm_best_position)
-    aquarium_1.prey_brain.update_brain(pso_prey.swarm_best_position)
-    aquarium_1.set_videoutput('validation_aquarium_nr_%s.mp4' % val_aquarium)
+    #best_pred_brain = pso_pred.get_particle_position_with_best_val_fitness()
+    best_pred_brain = pso_pred.swarm_best_position
+    aquarium_1.pred_brain.update_brain(best_pred_brain)
+
+    #best_prey_brain = pso_prey.get_particle_position_with_best_val_fitness()
+    best_prey_brain = pso_prey.swarm_best_position
+    aquarium_1.prey_brain.update_brain(best_prey_brain)
+    aquarium_1.set_videoutput('validation_aquarium_nrdalig_%s.mp4' % val_aquarium)
     aquarium_1.run_simulation()
 
 if __name__ == '__main__':
-    visulaize_one_aquarium()
+    visulaize_one_aquarium(2)
