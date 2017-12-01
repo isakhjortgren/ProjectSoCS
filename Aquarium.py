@@ -271,15 +271,17 @@ class aquarium(object):
                     self.fish_vel[i, 1] = 0
 
             off_boundary = (self.size_X < self.fish_xy[:, 0]) | (self.fish_xy[:, 0] < 0) | \
-                           (self.size_Y < self.fish_xy[:, 1]) | (self.fish_xy[:, 0] < 0)
-            kill_prey = off_boundary[self.interval_pred] = False
-            kill_prey = np.array(kill_prey, dtype = int)
-            self.fish_xy = np.delete(self.fish_xy, kill_prey, axis=0)
-            self.fish_vel = np.delete(self.fish_vel, kill_prey, axis=0)
-            self.acc_fish = np.delete(self.acc_fish, kill_prey, axis=0)
-            nbr_killed = kill_prey.sum()
-            for i in range(nbr_killed):
-                self.interval_prey.pop()
+                           (self.size_Y < self.fish_xy[:, 1]) | (self.fish_xy[:, 1] < 0)
+            off_boundary[self.interval_pred] = False  # don't kill sharks
+            if True in off_boundary:
+                off_boundary, = np.where(off_boundary)
+                self.fish_xy = np.delete(self.fish_xy, off_boundary, axis=0)
+                self.fish_vel = np.delete(self.fish_vel, off_boundary, axis=0)
+                self.acc_fish = np.delete(self.acc_fish, off_boundary, axis=0)
+                nbr_killed = len(off_boundary)
+                for i in range(nbr_killed):
+                    self.interval_prey.pop()
+                    self.eaten += 1
 
         # Correct for max velocities
         vel_magnitudes = np.linalg.norm(self.fish_vel,axis=1)
@@ -403,10 +405,10 @@ if __name__ == '__main__':
     aquarium_paramters = {'nbr_of_prey': 20, 'nbr_of_pred': 5, 'size_X': 5, 'size_Y': 5, 'max_speed_prey': 0.07,
                           'max_speed_pred': 0.1, 'max_acc_prey': 0.1, 'max_acc_pred': 0.1, 'eat_radius': 0.1,
                           'weight_range': 5, 'nbr_of_hidden_neurons': 10, 'nbr_of_outputs': 2,
-                          'visibility_range': 1.5, 'input_set': ["enemy_pos","wall"] }
+                          'visibility_range': 1.5, 'input_set': ["enemy_pos","wall"], 'safe_boundary':False }
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_paramters)
-   # a.set_videoutput('test.mp4',fps=25)
+    a.set_videoutput('test.mp4',fps=25)
     print(a.run_simulation())
     print("LOL")
