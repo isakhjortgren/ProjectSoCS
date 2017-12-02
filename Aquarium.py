@@ -425,6 +425,11 @@ class aquarium(object):
         self.plot_text.set_text("Fish killed = "+str(self.eaten))
         self.video_writer.grab_frame()
     def remove_fishes(self,indices):
+        
+        if max(indices)>len(self.fish_xy):
+            #Can't remove what isn't there... 
+            return
+
         self.fish_xy  = np.delete(self.fish_xy,  indices, axis=0)
         self.fish_vel = np.delete(self.fish_vel, indices, axis=0)
         self.acc_fish = np.delete(self.acc_fish, indices, axis=0)
@@ -433,7 +438,8 @@ class aquarium(object):
 
         self.eaten += len(indices)
         for i in range(len(indices)):
-            self.interval_prey.pop()
+            if len(self.interval_prey)>0:
+                self.interval_prey.pop()
 
 if __name__ == '__main__':
 
