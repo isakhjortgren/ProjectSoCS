@@ -297,11 +297,15 @@ class aquarium(object):
             x_diff = np.column_stack([self.fish_xy[n_preds:,0]]*n_preds) - np.row_stack([self.fish_xy[:n_preds,0]]*n_preys) 
             y_diff = np.column_stack([self.fish_xy[n_preds:,1]]*n_preds) - np.row_stack([self.fish_xy[:n_preds,1]]*n_preys)
         except ValueError as vl:
-            print("A rare bug in the check for eating algorithm has shown itself\nLet's disregard it a few times")
-            self.rare_bug_counter += 1
-            if self.rare_bug_counter > 5:
-                print("Cannot disregard bug more than 5 times!")
-                raise vl
+            print("-"*20)
+            print("Exception caught in timestep() at check for shark eating")
+            print(self.fish_xy)
+            print(self.interval_pred)
+            print(self.interval_prey)
+            print("n_preds",n_preds)
+            print("n_preys",n_preys)
+            print("-"*20)
+            raise RuntimeError("interval variables and list of fish positions do not match, see error report above")
 
         eaten_indicies =    (abs(x_diff)<self.eat_radius) & (abs(y_diff)<self.eat_radius) 
         if True in eaten_indicies:
@@ -425,9 +429,10 @@ class aquarium(object):
         self.plot_text.set_text("Fish killed = "+str(self.eaten))
         self.video_writer.grab_frame()
     def remove_fishes(self,indices):
-        
-        if max(indices)>len(self.fish_xy):
-            #Can't remove what isn't there... 
+        indices = list(set(indices))
+    
+        if max(indices) >= self.fish_xy.shape[0] :
+            raise RuntimeError("This part shouldn't ever run if we have good code")
             return
 
         self.fish_xy  = np.delete(self.fish_xy,  indices, axis=0)
@@ -440,16 +445,32 @@ class aquarium(object):
         for i in range(len(indices)):
             if len(self.interval_prey)>0:
                 self.interval_prey.pop()
+            else:
+                raise RuntimeError("Stop writting bad code!")
+
+        # Crazy error check, ENGAGE! 
+        if self.fish_xy.shape[0] != len(self.interval_pred) + len(self.interval_prey):
+            print("-"*20)
+            print("Error at exit of remove_fishes()")
+            print(self.fish_xy)
+            print(self.interval_pred)
+            print(self.interval_prey)
+            print("indices:", indices)
+            print("-"*20)
+            raise RuntimeError("interval variables and list of fish positions do not match, see error report above")
+
+
 
 if __name__ == '__main__':
 
-    aquarium_paramters = {'nbr_of_prey': 25, 'nbr_of_pred': 7, 'size_X': 3, 'size_Y': 3, 'max_speed_prey': 0.1,
-                          'max_speed_pred': 0.15, 'max_acc_prey': 0.1, 'max_acc_pred': 0.15, 'eat_radius': 0.07,
-                          'weight_range': 5, 'nbr_of_hidden_neurons': 10, 'nbr_of_outputs': 2,
-                          'visibility_range': 1.5, 'input_set': ["enemy_pos","wall"], 'safe_boundary':True }
+    aquarium_parameters = {'nbr_of_prey': 15, 'nbr_of_pred': 2, 'size_X': 2, 'size_Y': 2, 'max_speed_prey': 0.1,
+                       'max_speed_pred': 0.2, 'max_acc_prey': 0.3, 'max_acc_pred': 0.1, 'eat_radius': 0.05,
+                       'weight_range': 1, 'nbr_of_hidden_neurons': 5, 'nbr_of_outputs': 2,
+                       'visibility_range': 0.5, 'rand_walk_brain_set': [],
+                       'input_set': ["enemy_pos", "friend_pos", "wall"], 'safe_boundary': False}
 
     np.set_printoptions(precision=3)
-    a = aquarium(**aquarium_paramters)
+    a = aquarium(**aquarium_parameters)
     #a.set_videoutput('test.mp4',fps=25)
     start_time = time.time()
     print(a.run_simulation())
