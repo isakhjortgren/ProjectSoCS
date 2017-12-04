@@ -14,7 +14,7 @@ try:
 except ImportError:
     pass
 
-from Brain import Brain, randomBrain, attackBrain
+from Brain import Brain, randomBrain, attackBrain,dodgeBrain
 
 
 class aquarium(object):
@@ -47,6 +47,8 @@ class aquarium(object):
             self.pred_brain = randomBrain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
         elif "attack_shark" in rand_walk_brain_set:
             self.pred_brain = attackBrain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
+            self.prey_brain = dodgeBrain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
+        
         else:
             self.pred_brain = Brain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
 
@@ -113,8 +115,6 @@ class aquarium(object):
         x_diff = self.x_diff 
         y_diff = self.y_diff
 
-        
-        
         ## Derived matricis ##
         distances = np.sqrt(x_diff**2 + y_diff**2)
         inv_distances = 1/(distances+0.000000001)
@@ -189,8 +189,8 @@ class aquarium(object):
 
         if "wall" in self.inputs:
             # TODO: Relative position to wall. X & Y. [-1, 1]
-            return_matrix[:, next_col] = 2*self.fish_xy[:,0]/self.size_X-1
-            return_matrix[:, next_col+1] = 2*self.fish_xy[:,1]/self.size_Y-1
+            return_matrix[:, next_col]  =   2*self.fish_xy[:,0]/self.size_X-1
+            return_matrix[:, next_col+1]=   2*self.fish_xy[:,1]/self.size_Y-1
 
         return return_matrix
 
@@ -206,7 +206,6 @@ class aquarium(object):
         acc_norm = np.linalg.norm(self.acc_fish,axis=1)
         
         self.acc_fish *= self.max_acc[:,np.newaxis]
-        
         
         indices = np.where(acc_norm>1)
         if len(indices)>0:
@@ -259,11 +258,11 @@ class aquarium(object):
             self.fish_xy[indices,0] =   self.size_X - random(len(indices)) / (self.size_X * 500)
             self.fish_vel[indices,0] =  0
 
-            indices = np.where(self.fish_xy[:,0] < 0)
+            indices = np.where(self.fish_xy[:,1] < 0)
             self.fish_xy[indices,1] =   random(len(indices)) / (self.size_Y * 500)
             self.fish_vel[indices,1] =  0
 
-            indices = np.where(self.fish_xy[:,0] > self.size_Y)
+            indices = np.where(self.fish_xy[:,1] > self.size_Y)
             self.fish_xy[indices,1] =   self.size_X - random(len(indices)) / (self.size_Y * 500)
             self.fish_vel[indices,1] =  0
         else:
@@ -360,6 +359,7 @@ class aquarium(object):
             temp, = plt.plot([], [], 'r-')
             self.plot_pred_arrow.append(temp)
 
+        self.fish_acc_arrow, = plt.plot([], [], 'k--')
         self.video_filename = filename
         self.video_dpi = dpi
 
@@ -396,10 +396,12 @@ class aquarium(object):
                             np.ones(self.nbr_of_pred)*self.max_acc_pred, \
                             np.ones(self.nbr_of_prey)*self.max_acc_prey))
 
+        next_print = 1
         if self.video_enabled:
             with self.video_writer.saving(self.fig, self.video_filename, self.video_dpi):
                 #TODO: Decide max_iterations
                 while time < self.MAX_TIME and self.eaten <= HALF_NBR_FISHES:
+                    
                     self.timestep(dt, time)
                     self.__grab_Frame_()
                     time += dt
@@ -421,12 +423,16 @@ class aquarium(object):
             x_data = [self.fish_xy[fish_index, 0], self.fish_xy[fish_index, 0] + self.brain_input[fish_index, input_index]]
             y_data = [self.fish_xy[fish_index, 1], self.fish_xy[fish_index, 1] + self.brain_input[fish_index, input_index+1]]
 
-            #self.plot_prey_arrow[i].set_data(x_data, y_data)
+            self.plot_prey_arrow[i].set_data(x_data, y_data)
             
             x_data = [self.fish_xy[0, 0], self.fish_xy[0, 0] + self.brain_input[0, input_index]]
             y_data = [self.fish_xy[0, 1], self.fish_xy[0, 1] + self.brain_input[0, input_index+1]]
             
             self.plot_pred_arrow[i].set_data(x_data, y_data)
+
+        x,y = self.fish_xy[2,:]
+        dx,dy = self.acc_fish[2,:]
+        self.fish_acc_arrow.set_data([x,x+dx],[y,y+dy])
 
         self.plot_text.set_text("Fish killed = "+str(self.eaten))
         self.video_writer.grab_frame()
@@ -465,15 +471,15 @@ class aquarium(object):
 
 if __name__ == '__main__':
 
-    aquarium_parameters = {'nbr_of_prey': 15, 'nbr_of_pred': 2, 'size_X': 2, 'size_Y': 2, 'max_speed_prey': 0.1,
-                       'max_speed_pred': 0.2, 'max_acc_prey': 0.3, 'max_acc_pred': 0.1, 'eat_radius': 0.05,
+    aquarium_parameters = {'nbr_of_prey': 20, 'nbr_of_pred': 5, 'size_X': 2, 'size_Y': 2, 'max_speed_prey': 0.2,
+                       'max_speed_pred': 0.2, 'max_acc_prey': 0.3, 'max_acc_pred': 0.3, 'eat_radius': 0.05,
                        'weight_range': 1, 'nbr_of_hidden_neurons': 5, 'nbr_of_outputs': 2,
                        'visibility_range': 0.5, 'rand_walk_brain_set': ["attack_shark"],
-                       'input_set': ["enemy_pos", "friend_pos", "wall"], 'safe_boundary': True}
+                       'input_set': ["enemy_pos","friend_pos", "wall"], 'safe_boundary': True}
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_parameters)
-    #a.set_videoutput('test.mp4',fps=25)
+    a.set_videoutput('test.mp4',fps=25)
     start_time = time.time()
     print(a.run_simulation())
 

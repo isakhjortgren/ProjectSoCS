@@ -40,12 +40,30 @@ class randomBrain(Brain):
 class attackBrain(Brain):
     
     def make_decision(self, total_inputs):
-        norm = np.linalg.norm(total_inputs[0:2])
-        return total_inputs[0:2]/norm
+        enemies = total_inputs[2:4]
+        enemies /= np.linalg.norm(enemies)        
+        friend_pos = total_inputs[0:2]
+        output_state = enemies - 0.5*friend_pos
 
+        return output_state
 
     def update_brain(self, weight_array):
         raise NotImplementedError('Do not fucking train random walk sharks!!!')
+
+class dodgeBrain(Brain):
+    def make_decision(self, total_inputs):
+        perpendicular_to_shark = np.array([total_inputs[3],-total_inputs[2]])  
+        position = total_inputs[-2:]   
+        output_state = perpendicular_to_shark  
+        output_state /=  np.linalg.norm(output_state) 
+
+        if np.sum(output_state*position) > 0.9: 
+            output_state *= -1 
+        return output_state  
+
+    def update_brain(self, weight_array):
+        raise NotImplementedError('Do not fucking train random walk sharks!!!')
+
 
 
 if __name__ == '__main__':
