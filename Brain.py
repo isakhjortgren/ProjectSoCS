@@ -16,7 +16,12 @@ class Brain(object):
         hidden_state = np.concatenate((hidden_state, [1]))
         output_state = (np.dot(self.weights2, hidden_state))
 
-        return output_state
+        norm = np.linalg.norm(output_state)
+        if norm>1:
+            return output_state/norm
+        else:
+            return output_state
+
 
     def update_brain(self, weight_array):
         number_weights1 = self.nbr_of_hidden_neurons*(self.nbr_of_inputs + 1)
@@ -32,13 +37,22 @@ class randomBrain(Brain):
     def update_brain(self, weight_array):
         raise NotImplementedError('Do not fucking train random walk sharks!!!')
 
+class attackBrain(Brain):
+    
+    def make_decision(self, total_inputs):
+        norm = np.linalg.norm(total_inputs[0:2])
+        return total_inputs[0:2]/norm
+
+
+    def update_brain(self, weight_array):
+        raise NotImplementedError('Do not fucking train random walk sharks!!!')
 
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     nbr_input = 6
-    hn = 2
-    wr = 1
+    hn = 10
+    wr = 0.1
     runs = 100000
     nbr_out = 2
     data = np.zeros((runs, 2))

@@ -14,7 +14,7 @@ try:
 except ImportError:
     pass
 
-from Brain import Brain, randomBrain
+from Brain import Brain, randomBrain, attackBrain
 
 
 class aquarium(object):
@@ -45,6 +45,8 @@ class aquarium(object):
         
         if "pred" in rand_walk_brain_set:
             self.pred_brain = randomBrain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
+        elif "attack_shark" in rand_walk_brain_set:
+            self.pred_brain = attackBrain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
         else:
             self.pred_brain = Brain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
 
@@ -466,8 +468,8 @@ if __name__ == '__main__':
     aquarium_parameters = {'nbr_of_prey': 15, 'nbr_of_pred': 2, 'size_X': 2, 'size_Y': 2, 'max_speed_prey': 0.1,
                        'max_speed_pred': 0.2, 'max_acc_prey': 0.3, 'max_acc_pred': 0.1, 'eat_radius': 0.05,
                        'weight_range': 1, 'nbr_of_hidden_neurons': 5, 'nbr_of_outputs': 2,
-                       'visibility_range': 0.5, 'rand_walk_brain_set': [],
-                       'input_set': ["enemy_pos", "friend_pos", "wall"], 'safe_boundary': False}
+                       'visibility_range': 0.5, 'rand_walk_brain_set': ["attack_shark"],
+                       'input_set': ["enemy_pos", "friend_pos", "wall"], 'safe_boundary': True}
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_parameters)
