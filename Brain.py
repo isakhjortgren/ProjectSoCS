@@ -54,7 +54,7 @@ class attackBrain(Brain):
                 enemy_vel /= enemy_vel_norm
 
 
-        output_state += 0.3*enemy_vel
+            output_state += 0.3*enemy_vel
 
         return output_state / np.linalg.norm(output_state)
 
