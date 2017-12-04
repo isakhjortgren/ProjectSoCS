@@ -43,9 +43,20 @@ class attackBrain(Brain):
         enemies = total_inputs[2:4]
         enemies /= np.linalg.norm(enemies)        
         friend_pos = total_inputs[0:2]
-        output_state = enemies - 0.5*friend_pos
+        output_state = enemies - 0.2*friend_pos
 
-        return output_state
+       
+
+        if len(total_inputs)==6:
+            enemy_vel = total_inputs[4:6]
+            enemy_vel_norm = np.linalg.norm(enemy_vel)
+            if enemy_vel_norm > 0.01:
+                enemy_vel /= enemy_vel_norm
+
+
+        output_state += 0.3*enemy_vel
+
+        return output_state / np.linalg.norm(output_state)
 
     def update_brain(self, weight_array):
         raise NotImplementedError('Do not fucking train random walk sharks!!!')

@@ -355,7 +355,12 @@ class aquarium(object):
             temp, = plt.plot([], [], 'r-')
             self.plot_pred_arrow.append(temp)
 
-        self.fish_acc_arrow, = plt.plot([], [], 'k--')
+
+        self.fish_acc_arrow = list() 
+        for i in range(self.fish_xy_start.shape[0]):
+            temp, = plt.plot([], [], 'k--')
+            self.fish_acc_arrow.append(temp)
+
         self.video_filename = filename
         self.video_dpi = dpi
 
@@ -401,6 +406,10 @@ class aquarium(object):
                     self.timestep(dt, time)
                     self.__grab_Frame_()
                     time += dt
+                    if time>next_print:
+                        next_print += 1
+                        print(time, "eaten =",self.eaten)
+                     
         else:
             while time < self.MAX_TIME and self.eaten <= HALF_NBR_FISHES:
                 self.timestep(dt, time)
@@ -413,22 +422,10 @@ class aquarium(object):
         self.plot_prey.set_data(self.fish_xy[self.interval_prey,0], self.fish_xy[self.interval_prey,1])
         self.plot_pred.set_data(self.fish_xy[self.interval_pred,0], self.fish_xy[self.interval_pred,1])
 
-        fish_index = len(self.interval_pred)
-
-        for i,input_index in enumerate(range(0,self.input_to_plot*2,2)):
-            x_data = [self.fish_xy[fish_index, 0], self.fish_xy[fish_index, 0] + self.brain_input[fish_index, input_index]]
-            y_data = [self.fish_xy[fish_index, 1], self.fish_xy[fish_index, 1] + self.brain_input[fish_index, input_index+1]]
-
-            self.plot_prey_arrow[i].set_data(x_data, y_data)
-            
-            x_data = [self.fish_xy[0, 0], self.fish_xy[0, 0] + self.brain_input[0, input_index]]
-            y_data = [self.fish_xy[0, 1], self.fish_xy[0, 1] + self.brain_input[0, input_index+1]]
-            
-            self.plot_pred_arrow[i].set_data(x_data, y_data)
-
-        x,y = self.fish_xy[2,:]
-        dx,dy = self.acc_fish[2,:]
-        self.fish_acc_arrow.set_data([x,x+dx],[y,y+dy])
+        for i in range(self.fish_xy.shape[0]):
+            x,y = self.fish_xy[i,:]
+            dx,dy = self.acc_fish[i,:]
+            self.fish_acc_arrow[i].set_data([x,x+dx],[y,y+dy])
 
         self.plot_text.set_text("Fish killed = "+str(self.eaten))
         self.video_writer.grab_frame()
@@ -467,11 +464,15 @@ class aquarium(object):
 
 if __name__ == '__main__':
 
-    aquarium_parameters = {'nbr_of_prey': 20, 'nbr_of_pred': 5, 'size_X': 2, 'size_Y': 2, 'max_speed_prey': 0.2,
-                       'max_speed_pred': 0.2, 'max_acc_prey': 0.3, 'max_acc_pred': 0.3, 'eat_radius': 0.05,
+    aquarium_parameters = {'nbr_of_prey': 20, 'nbr_of_pred': 2, 'size_X': 2, 'size_Y': 2, 
+                        'max_speed_prey': 0.15,
+                        'max_speed_pred': 0.2, 
+                        'max_acc_prey': 0.3, 
+                        'max_acc_pred': 0.15, 
+                        'eat_radius': 0.05,
                        'weight_range': 1, 'nbr_of_hidden_neurons': 5, 'nbr_of_outputs': 2,
-                       'visibility_range': 0.5, 'rand_walk_brain_set': ["attack_shark"],
-                       'input_set': ["enemy_pos","friend_pos", "wall"], 'safe_boundary': True}
+                       'visibility_range': 0.5, 'rand_walk_brain_set': ["prey", "pred"],
+                       'input_set': ["enemy_pos","friend_pos","enemy_vel", "wall"], 'safe_boundary': True}
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_parameters)
