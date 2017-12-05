@@ -88,6 +88,8 @@ class aquarium(object):
         self.MAX_TIME = None
         self.max_vels = None
 
+        self.time_last_snack = None
+
         self.rare_bug_counter = None
 
     def neighbourhood(self, distances):
@@ -305,6 +307,7 @@ class aquarium(object):
             indices_of_eaten_fish = eaten_indicies[:,0]+n_preds
             self.remove_fishes(indices_of_eaten_fish)
             self.pred_score += len(indices_of_eaten_fish)/(time + self.MAX_TIME)
+            self.time_last_snack = time
             self.prey_score -= len(indices_of_eaten_fish)/(time + self.MAX_TIME)
   
 
@@ -364,6 +367,7 @@ class aquarium(object):
         time = 0
 
         self.MAX_TIME = 100
+        self.MAX_TIME_SINCE_SNACK = 20
         self.rare_bug_counter = 0
         HALF_NBR_FISHES = len(self.fish_xy_start) // 2
 
@@ -386,15 +390,17 @@ class aquarium(object):
                             np.ones(self.nbr_of_pred)*self.max_acc_pred, \
                             np.ones(self.nbr_of_prey)*self.max_acc_prey))
 
+        self.time_last_snack = 0
+
         if self.video_enabled:
             with self.video_writer.saving(self.fig, self.video_filename, self.video_dpi):
                 #TODO: Decide max_iterations
-                while time < self.MAX_TIME and self.eaten <= HALF_NBR_FISHES:
+                while time < self.MAX_TIME and self.eaten <= HALF_NBR_FISHES and time-self.time_last_snack<self.MAX_TIME_SINCE_SNACK:
                     self.timestep(dt, time)
                     self.__grab_Frame_()
                     time += dt
         else:
-            while time < self.MAX_TIME and self.eaten <= HALF_NBR_FISHES:
+            while time < self.MAX_TIME and self.eaten <= HALF_NBR_FISHES and time-self.time_last_snack<self.MAX_TIME_SINCE_SNACK:
                 self.timestep(dt, time)
                 time += dt
 
