@@ -91,7 +91,7 @@ class aquarium(object):
         self.rare_bug_counter = None
 
     def neighbourhood(self, distances):
-        return np.exp(-distances**2/(2*self.visibility_range**2)) /self.visibility_range 
+        return np.exp(-distances**2/(2*self.visibility_range**2)) 
 
     def calculate_inputs(self):
         
@@ -116,57 +116,49 @@ class aquarium(object):
         ## Derived matricis ##
         distances = np.sqrt(x_diff**2 + y_diff**2)
         inv_distances = 1/(distances+0.000000001)
-        neighbr_mat = self.neighbourhood(distances)
+        neighbr_mat = self.neighbourhood(distances) * inv_distances
+      
 
-
-        if "friend_vel" in self.inputs or "enemy_vel" in self.inputs:
-            v_x_diff = np.column_stack([self.fish_vel[:,0]]*N) - np.row_stack([self.fish_vel[:,0]]*N)
-            v_y_diff = np.column_stack([self.fish_vel[:,1]]*N) - np.row_stack([self.fish_vel[:,1]]*N)
-
-            vel_distances = np.sqrt(v_x_diff**2 + v_y_diff**2)
-            inv_vel_distances = 1/(vel_distances+0.000000001)
-
-        ## PREYS: ##
 
         if "friend_pos" in self.inputs:
             # Prey to Prey: X & Y center of mass
-            temp_matrix = neighbr_mat[n_preds:,n_preds:] * inv_distances[n_preds:, n_preds:]
-            return_matrix[ n_preds:,next_col] = 1/(n_preys-1) * np.sum(temp_matrix * x_diff[n_preds:, n_preds:], axis=0)
-            return_matrix[ n_preds:,next_col+1] = 1/(n_preys-1) * np.sum(temp_matrix * y_diff[n_preds:, n_preds:], axis=0)
-        
-            # Pred-Pred: X & Y center of mass
-            temp_matrix = neighbr_mat[:n_preds, :n_preds] * inv_distances[:n_preds, :n_preds]
-            return_matrix[:n_preds, next_col] = 1/(n_preds-1) * np.sum(temp_matrix * x_diff[:n_preds, :n_preds], axis=0)
-            return_matrix[:n_preds, next_col+1] = 1/(n_preds-1) * np.sum(temp_matrix * y_diff[:n_preds, :n_preds], axis=0)
+            closest = np.argmin(distances[n_preds:, n_preds:]+np.identity(n_preys)*100,axis=1)
 
-            next_col += 2
+            i_es = list(range(n_preds, n_preds+n_preys))
+            j_es = closest+n_preds
 
-        if "friend_vel" in self.inputs:
+            return_matrix[n_preds: , next_col ]     = -x_diff[i_es,j_es ] * neighbr_mat[i_es,j_es ]
+            return_matrix[n_preds: , next_col +1]   = -y_diff[i_es,j_es ] * neighbr_mat[i_es,j_es ]
 
-            # Prey to prey: X & Y velocity:
-            temp_matrix = neighbr_mat[n_preds:,n_preds:] * inv_vel_distances[n_preds:, n_preds:]
-            return_matrix[ n_preds:,next_col] = 1/(n_preys-1) * np.sum(temp_matrix * v_x_diff[n_preds:, n_preds:], axis=0)
-            return_matrix[ n_preds:,next_col+1] = 1/(n_preys-1) * np.sum(temp_matrix * v_y_diff[n_preds:, n_preds:], axis=0)
-
-            # Pred-Pred: X & Y velocity
-            temp_matrix = neighbr_mat[:n_preds, :n_preds] * inv_vel_distances[:n_preds, :n_preds]
-            return_matrix[:n_preds, next_col] = 1 / (n_preds - 1) * np.sum(temp_matrix * v_x_diff[:n_preds, :n_preds],axis=0)
-            return_matrix[:n_preds, next_col + 1] = 1 / (n_preds - 1) * np.sum( temp_matrix * v_y_diff[:n_preds, :n_preds], axis=0)
-
+            closest = np.argmin(distances[:n_preds,:n_preds]+np.identity(n_preds)*100,axis=1)
+            i_es = list(range(n_preds))
+            j_es = closest
+            
+            return_matrix[:n_preds , next_col ]     = -x_diff[ i_es, j_es] * neighbr_mat[i_es,j_es ]
+            return_matrix[:n_preds , next_col +1]   = -y_diff[ i_es, j_es] * neighbr_mat[i_es,j_es ]
 
             next_col += 2
 
         if "enemy_pos" in self.inputs: 
 
-            ##TODO: # Prey-Pred: X & Y. center of mass
-            temp_matrix = neighbr_mat[:n_preds,n_preds:] * inv_distances[:n_preds, n_preds:]
-            return_matrix[n_preds:, next_col] = (1/n_preds) * np.sum(temp_matrix * x_diff[:n_preds, n_preds:], axis=0)
-            return_matrix[n_preds:, next_col+1] = (1/n_preds) * np.sum(temp_matrix * y_diff[:n_preds, n_preds:], axis=0)
+            # Prey -> Pred
+            closest = np.argmin(distances[n_preds:, :n_preds] ,axis=1)
 
-            # TODO: # Pred-Prey: X & Y. center of mass
-            temp_matrix = neighbr_mat[n_preds:, :n_preds] * inv_distances[n_preds:, :n_preds]
-            return_matrix[:n_preds, next_col] = 1 / n_preys * np.sum(temp_matrix * x_diff[n_preds:, :n_preds], axis=0)
-            return_matrix[:n_preds, next_col + 1] = 1 / n_preys * np.sum(temp_matrix * y_diff[n_preds:, :n_preds], axis=0)
+            i_es = list(range(n_preds, n_preds+n_preys))
+            j_es = closest
+            return_matrix[n_preds:, next_col]       = -x_diff[i_es, j_es]* neighbr_mat[i_es,j_es ]
+            return_matrix[n_preds:, next_col + 1]   = -y_diff[i_es, j_es]* neighbr_mat[i_es,j_es ]
+
+            # Pred -> Prey
+            closest = np.argmin(distances[:n_preds, n_preds:] ,axis=1)
+
+            i_es = list(range(n_preds))
+            j_es = closest+n_preds
+
+            return_matrix[:n_preds, next_col]       = -x_diff[i_es, j_es]* neighbr_mat[i_es,j_es ]
+            return_matrix[:n_preds, next_col + 1]   = -y_diff[i_es, j_es]* neighbr_mat[i_es,j_es ]
+
+
 
             next_col += 2
         

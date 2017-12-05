@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 random = np.random.random
 import pickle
 
+from Brain import NoneBrain
+
 from Aquarium import aquarium
 
 
@@ -17,8 +19,8 @@ class PlotHandler:
     def __init__(self,figure,aq_par,pred_brain,prey_brain):
         self.aq = aquarium(**aq_par)
         
-        self.aq.pred_brain.update_brain(pred_brain)
-        self.aq.prey_brain.update_brain(prey_brain)
+        self.aq.pred_brain = pred_brain
+        self.aq.prey_brain = prey_brain
 
         self.figure = figure
 
@@ -158,18 +160,32 @@ class PlotHandler:
         self.figure.canvas.mpl_disconnect(self.cidmotion)
 
 
-with open('TrainingData.p', 'rb') as f:
-    pso_data = pickle.load(f)
-
-pred_brain = pso_data["list_of_pso_prey"][-1]
-prey_brain = pso_data["list_of_pso_pred"][-1]
-
-aq_par = prey_brain.aquarium_parameters
 
 
-fig = plt.figure()
-ph = PlotHandler(fig,aq_par,pred_brain.swarm_best_position , prey_brain.swarm_best_position)
+if __name__ == '__main__':
+    aq_par = {'nbr_of_prey': 4, 'nbr_of_pred': 3, 'size_X': 5, 'size_Y': 5, 'max_speed_prey': 0.1,
+                       'max_speed_pred': 0.2, 'max_acc_prey': 0.3, 'max_acc_pred': 0.1, 'eat_radius': 0.05,
+                       'weight_range': 1, 'nbr_of_hidden_neurons': 5, 'nbr_of_outputs': 2,
+                       'visibility_range': 0.5, 'rand_walk_brain_set': [],
+                       'input_set': ["friend_pos", "enemy_pos"], 'safe_boundary': False}
+
+    fig = plt.figure()
+    ph = PlotHandler(fig, aq_par, NoneBrain(4,4), NoneBrain(4,4))
+    plt.show()
+if False:
+
+    with open('TrainingData.p', 'rb') as f:
+        pso_data = pickle.load(f)
+
+    pred_brain = pso_data["list_of_pso_prey"][-1]
+    prey_brain = pso_data["list_of_pso_pred"][-1]
+
+    aq_par = prey_brain.aquarium_parameters
 
 
-print("Let the Show begin")
-plt.show()
+    fig = plt.figure()
+    ph = PlotHandler(fig,aq_par,pred_brain.swarm_best_position , prey_brain.swarm_best_position)
+
+
+    print("Let the Show begin")
+    plt.show()

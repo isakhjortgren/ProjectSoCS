@@ -32,7 +32,12 @@ class randomBrain(Brain):
     def update_brain(self, weight_array):
         raise NotImplementedError('Do not fucking train random walk sharks!!!')
 
+class NoneBrain(Brain):
+    def make_decision(self, total_inputs):
+        return np.zeros(2)
 
+    def update_brain(self, weight_array):
+        raise NotImplementedError('Do not fucking train None walk sharks!!!')
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
