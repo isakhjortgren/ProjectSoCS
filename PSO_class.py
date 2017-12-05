@@ -23,8 +23,8 @@ class PSO(object):
         # PSO parameters
         self.nbr_of_validation_aquariums = 4
         self.nbr_of_aquariums = 4
-        self.nbr_of_particles = 30
-        self.nbr_of_iterations = 100
+        self.nbr_of_particles = 3
+        self.nbr_of_iterations = 10
         self.maximum_velocity = self.weight_range
         self.c1 = 2
         self.c2 = 2
@@ -81,6 +81,17 @@ class PSO(object):
         index_with_best_val_fitness = np.argmax(self.list_of_validation_results)
         return self.list_of_swarm_best_positions[index_with_best_val_fitness]
 
+    def run_all_particles(self):
+        particle_values = np.zeros(self.nbr_of_particles)
+        for i_particle in range(self.nbr_of_particles):
+            array = self.positions_matrix[i_particle, :]
+
+            list_of_result = Parallel(n_jobs=nrb_of_cores)(delayed(self.run_one_aquarium)(i_aquarium, array)
+                                                           for i_aquarium in self.list_of_aquarium)
+
+            particle_values[i_particle] = np.mean(list_of_result)
+        return particle_values
+
     def run_pso(self):
         
         start_time = time.time()
@@ -107,22 +118,13 @@ class PSO(object):
             print("Epoch number", i_iteration+1,"out of", self.nbr_of_iterations, time_string)
 
 
-
-            particle_values = np.zeros(self.nbr_of_particles)
-            for i_particle in range(self.nbr_of_particles):
-                array = self.positions_matrix[i_particle, :]
-
-                list_of_result = Parallel(n_jobs=nrb_of_cores)(delayed(self.run_one_aquarium)(i_aquarium, array)
-                                                               for i_aquarium in self.list_of_aquarium)
-
-                particle_values[i_particle] = np.mean(list_of_result)
+            particle_values = self.run_all_particles()
 
             iteration_best = np.max(particle_values)
             if iteration_best > self.swarm_best_value:
                 self.swarm_best_value = iteration_best
                 self.swarm_best_position = self.positions_matrix[np.argmax(particle_values), :]
-                validation_scores = Parallel(n_jobs=nrb_of_cores)(delayed(self.run_one_aquarium)(i_aquarium, array)
-                                                                  for i_aquarium in self.list_of_validation_aquarium)
+                validation_scores = Parallel(n_jobs=nrb_of_cores)(delayed(self.run_one_aquarium)(i_aquarium, self.swarm_best_position) for i_aquarium in self.list_of_validation_aquarium)
                 validation_score = np.mean(validation_scores)
             self.list_of_swarm_best_value.append(self.swarm_best_value)
             self.list_of_swarm_best_positions.append(self.swarm_best_position)

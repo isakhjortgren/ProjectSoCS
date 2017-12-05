@@ -15,8 +15,8 @@ class Brain(object):
         hidden_state = np.tanh(np.dot(self.weights1, total_inputs))
         hidden_state = np.concatenate((hidden_state, [1]))
         output_state = (np.dot(self.weights2, hidden_state))
-
-        return output_state
+        norm = np.linalg.norm(output_state)
+        return output_state / norm
 
     def update_brain(self, weight_array):
         number_weights1 = self.nbr_of_hidden_neurons*(self.nbr_of_inputs + 1)
