@@ -12,8 +12,7 @@ aquarium_parameters = {'nbr_of_prey': 15, 'nbr_of_pred': 2, 'size_X': 2, 'size_Y
 
 
 list_of_pso_pred = list()
-nbr_of_training_alternations = 2
-
+nbr_of_training_alternations = 1
 
 try:
     for i in range(nbr_of_training_alternations):
