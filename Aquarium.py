@@ -42,7 +42,7 @@ class aquarium(object):
             self.prey_brain = dodgeBrain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
         else: 
             self.prey_brain = Brain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
-        
+
         if "pred" in rand_walk_brain_set:
             self.pred_brain = attackBrain(nbr_of_hidden_neurons, nbr_of_inputs, nbr_of_outputs, weight_range)
         else:
@@ -322,7 +322,7 @@ class aquarium(object):
                                         / vel_magnitudes[indices,np.newaxis]         
 
 
-    def set_videoutput(self, filename, fps=15, dpi=100):
+    def set_videoutput(self, filename, fps=50, dpi=100):
         if self.video_enabled :
             raise BaseException("confusing to call set_videoutput() multiple times")
 

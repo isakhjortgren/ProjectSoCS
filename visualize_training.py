@@ -6,7 +6,6 @@ import matplotlib
 with open('TrainingData.p', 'rb') as f:
     pso_data = pickle.load(f)
 
-list_of_pso_prey = pso_data['list_of_pso_prey']
 list_of_pso_pred = pso_data['list_of_pso_pred']
 
 
@@ -57,16 +56,12 @@ def visulaize_one_aquarium(val_aquarium=0):
     aquarium_1.run_simulation()
 
 def visulaize_a_new_aquarium():
-    pso_prey = list_of_pso_prey[-1]
     pso_pred = list_of_pso_pred[-1]
     aquarium_1 = aquarium(**pso_pred.aquarium_parameters)
     # best_pred_brain = pso_pred.get_particle_position_with_best_val_fitness()
-    best_pred_brain = pso_pred.swarm_best_position
+    best_pred_brain = pso_pred.get_particle_position_with_best_val_fitness()
     aquarium_1.pred_brain.update_brain(best_pred_brain)
 
-    # best_prey_brain = pso_prey.get_particle_position_with_best_val_fitness()
-    best_prey_brain = pso_prey.swarm_best_position
-    aquarium_1.prey_brain.update_brain(best_prey_brain)
     aquarium_1.set_videoutput('new_aquarium.mp4')
     aquarium_1.run_simulation()
 

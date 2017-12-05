@@ -19,11 +19,10 @@ class PSO(object):
         self.aquarium_parameters = aquarium_parameters
 
         self.train_prey = train_prey
-
         # PSO parameters
         self.nbr_of_validation_aquariums = 4
-        self.nbr_of_aquariums = 4
-        self.nbr_of_particles = 30
+        self.nbr_of_aquariums = 8
+        self.nbr_of_particles = 3
         self.nbr_of_iterations = 100
         self.maximum_velocity = self.weight_range
         self.c1 = 2
@@ -86,6 +85,7 @@ class PSO(object):
         start_time = time.time()
 
         for i_iteration in range(self.nbr_of_iterations):
+            print('pso particle ', i_iteration+1, ' out of ', self.nbr_of_iterations)
             
             elapsed_sec = time.time()-start_time
 

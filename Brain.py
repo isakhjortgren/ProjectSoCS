@@ -16,11 +16,8 @@ class Brain(object):
         hidden_state = np.concatenate((hidden_state, [1]))
         output_state = (np.dot(self.weights2, hidden_state))
 
-        norm = np.linalg.norm(output_state)
-        if norm>1:
-            return output_state/norm
-        else:
-            return output_state
+        norm = np.linalg.norm(output_state) + 10**(-9)
+        return output_state/norm
 
 
     def update_brain(self, weight_array):
