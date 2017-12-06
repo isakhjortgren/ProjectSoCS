@@ -22,7 +22,7 @@ class PSO(object):
 
         # PSO parameters
         self.nbr_of_validation_aquariums = 4
-        self.nbr_of_aquariums = 8
+        self.nbr_of_aquariums = 4
         self.nbr_of_particles = 30
         self.nbr_of_iterations = 10
         self.maximum_velocity = self.weight_range
