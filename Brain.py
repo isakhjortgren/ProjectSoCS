@@ -2,8 +2,11 @@ import numpy as np
 
 
 class Brain(object):
-    def __init__(self, nbr_of_hidden_neurons, nbr_of_inputs=10, nbr_of_outputs=2,
-                 weight_range=5):
+    def __init__(self, nbr_of_hidden_neurons=None, nbr_of_inputs=10, nbr_of_outputs=2,
+                 weight_range=0.5):
+        if not nbr_of_hidden_neurons:
+            nbr_of_hidden_neurons = int((nbr_of_inputs + nbr_of_outputs)/2)
+
         self.nbr_of_hidden_neurons=nbr_of_hidden_neurons
         self.nbr_of_inputs=nbr_of_inputs
         self.nbr_of_outputs=nbr_of_outputs
@@ -18,7 +21,6 @@ class Brain(object):
 
         norm = np.linalg.norm(output_state) + 10**(-9)
         return output_state/norm
-
 
     def update_brain(self, weight_array):
         number_weights1 = self.nbr_of_hidden_neurons*(self.nbr_of_inputs + 1)
@@ -73,6 +75,12 @@ class dodgeBrain(Brain):
         raise NotImplementedError('Do not fucking train random walk sharks!!!')
 
 
+class NoneBrain(Brain):
+    def make_decision(self, total_inputs):
+        return np.zeros(2)
+
+    def update_brain(self, weight_array):
+        raise NotImplementedError('Do not fucking train None walk sharks!!!')
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt

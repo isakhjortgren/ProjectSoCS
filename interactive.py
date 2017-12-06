@@ -6,14 +6,16 @@ import matplotlib.pyplot as plt
 random = np.random.random
 import pickle
 
+from Brain import NoneBrain
+
 from Aquarium import aquarium
 
 class PlotHandler:
     def __init__(self,figure,aq_par,pred_brain,prey_brain):
         self.aq = aquarium(**aq_par)
         
-        self.aq.pred_brain.update_brain(pred_brain)
-        self.aq.prey_brain.update_brain(prey_brain)
+        self.aq.pred_brain = pred_brain
+        self.aq.prey_brain = prey_brain
 
         self.figure = figure
 
@@ -41,7 +43,7 @@ class PlotHandler:
         line_color = ["blue","orange","black" ]
 
         self.input_arrows = []
-        nbr_of_inputs = self.aq.pred_brain.nbr_of_inputs//2
+        nbr_of_inputs = len(self.aq.inputs)
         if "wall" in self.aq.inputs:
             nbr_of_inputs -= 1
         for i in range(N):
@@ -153,18 +155,21 @@ class PlotHandler:
         self.figure.canvas.mpl_disconnect(self.cidmotion)
 
 
-with open('TrainingData.p', 'rb') as f:
-    pso_data = pickle.load(f)
-
-pred_brain = pso_data["list_of_pso_prey"][-1]
-prey_brain = pso_data["list_of_pso_pred"][-1]
-
-aq_par = prey_brain.aquarium_parameters
-aq_par["visibility_range"] *= 0.4
-
-fig = plt.figure()
-ph = PlotHandler(fig,aq_par,pred_brain.swarm_best_position , prey_brain.swarm_best_position)
 
 
-print("Let the Show begin")
-plt.show()
+if __name__ == '__main__':
+
+    with open('TrainingData-3.p', 'rb') as f:
+        pso_data = pickle.load(f)
+
+    pred_brain = pso_data["list_of_pso_prey"][-1]
+    prey_brain = pso_data["list_of_pso_pred"][-1]
+
+    aq_par = prey_brain.aquarium_parameters
+
+    fig = plt.figure()
+    ph = PlotHandler(fig,aq_par,pred_brain.swarm_best_position , prey_brain.swarm_best_position)
+
+
+    print("Let the Show begin")
+    plt.show()

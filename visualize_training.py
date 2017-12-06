@@ -58,11 +58,17 @@ def visulaize_one_aquarium(val_aquarium=0):
 def visulaize_a_new_aquarium():
     pso_pred = list_of_pso_pred[-1]
     aquarium_1 = aquarium(**pso_pred.aquarium_parameters)
+    print(pso_pred.aquarium_parameters['input_set'])
+    print('safe boundary? ', pso_pred.aquarium_parameters['safe_boundary'])
     # best_pred_brain = pso_pred.get_particle_position_with_best_val_fitness()
     best_pred_brain = pso_pred.get_particle_position_with_best_val_fitness()
     aquarium_1.pred_brain.update_brain(best_pred_brain)
 
-    aquarium_1.set_videoutput('new_aquarium.mp4')
+    # best_prey_brain = pso_prey.get_particle_position_with_best_val_fitness()
+    best_prey_brain = pso_prey.swarm_best_position
+    aquarium_1.prey_brain.update_brain(best_prey_brain)
+    aquarium_1.set_videoutput('new_aquarium.mp4', fps=45)
+
     aquarium_1.run_simulation()
 
 
