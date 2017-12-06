@@ -90,20 +90,34 @@ class PSO(object):
             #check brain
             tmp_brain = self.list_of_aquarium[0].prey_brain
             tmp_brain.update_brain(array)
-            defined_inputs = np.zeros(self.nbr_of_inputs, 4)
+            defined_inputs = np.zeros((4, self.nbr_of_inputs))
             enemy_pso_start_index = 0
             if 'friend_vel' in self.aquarium_parameters['input_set']:
                 enemy_pso_start_index += 2
             if 'friend_pos' in self.aquarium_parameters['input_set']:
                 enemy_pso_start_index += 2
-            defined_inputs[:, enemy_pso_start_index] = [0, -0.5, 0, 0.5]
-            defined_inputs[:, enemy_pso_start_index + 1] = [-0.5, 0, 0.5, 0]
+            defined_inputs[:,enemy_pso_start_index]      = np.array([0,     -0.5,   0,      0.5])
+            defined_inputs[:,enemy_pso_start_index+1]      = np.array([-0.5,   0,      0.5,    0])
+
             for i in range(4):
+                tmp_input = defined_inputs[i,:]
 
+                tmp_decicion = tmp_brain.make_decision(tmp_input)
 
+                tmp_enemy_vector = tmp_input[enemy_pso_start_index:enemy_pso_start_index+2]
 
-            list_of_result = Parallel(n_jobs=nrb_of_cores)(delayed(self.run_one_aquarium)(i_aquarium, array)
+                dot_prod = np.dot(tmp_enemy_vector, tmp_decicion) / (np.linalg.norm(tmp_enemy_vector) * np.linalg.norm(tmp_decicion))
+
+                angle = np.arccos(np.clip(dot_prod, -1, 1))*180/3.1415
+
+                if( angle < 70 ):
+                    list_of_result = 0
+                    break
+                else:
+                    list_of_result = Parallel(n_jobs=nrb_of_cores)(delayed(self.run_one_aquarium)(i_aquarium, array)
                                                            for i_aquarium in self.list_of_aquarium)
+
+
 
             particle_values[i_particle] = np.mean(list_of_result)
         return particle_values
