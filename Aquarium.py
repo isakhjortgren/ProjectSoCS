@@ -28,7 +28,6 @@ class aquarium(object):
                  weight_range, visibility_range, safe_boundary=True, input_type='closest',
                  rand_walk_brain_set=[], input_set=["friend_pos","friend_vel","enemy_pos","enemy_vel","wall"]):
 
-
         #ToDo Init object variables
         self.record_video = False
         self.video_enabled = False
@@ -127,7 +126,7 @@ class aquarium(object):
         inv_distances = 1/(distances+0.000000001)
         neighbr_mat = self.neighbourhood(distances) * inv_distances
       
-
+        velocity_normation_factor = 1/(self.max_vel_pred + self.max_vel_prey)
 
         if "friend_pos" in self.inputs:
             # Prey to Prey: X & Y center of mass
@@ -168,6 +167,26 @@ class aquarium(object):
             return_matrix[:n_preds, next_col + 1]   = -y_diff[i_es, j_es]* neighbr_mat[i_es,j_es ]
 
             next_col += 2
+
+        if "enemy_vel" in self.inputs:
+            v_x_diff = np.column_stack([self.fish_vel[:, 0]] * N) - np.row_stack([self.fish_vel[:, 0]] * N)
+            v_y_diff = np.column_stack([self.fish_vel[:, 1]] * N) - np.row_stack([self.fish_vel[:, 1]] * N)
+
+            # Prey -> Pred
+            closest = np.argmin(distances[n_preds:, :n_preds] ,axis=1)
+
+            i_es = list(range(n_preds, n_preds+n_preys))
+            j_es = closest
+            return_matrix[n_preds:, next_col]       = -v_x_diff[i_es, j_es] * velocity_normation_factor
+            return_matrix[n_preds:, next_col + 1]   = -v_y_diff[i_es, j_es] * velocity_normation_factor
+
+             # Pred -> Prey
+            closest = np.argmin(distances[:n_preds, n_preds:] ,axis=1)
+
+            i_es = list(range(n_preds))
+            j_es = closest+n_preds
+            return_matrix[:n_preds, next_col]       = -v_x_diff[i_es, j_es] * velocity_normation_factor
+            return_matrix[:n_preds, next_col + 1]   = -v_y_diff[i_es, j_es] * velocity_normation_factor
 
         if "wall" in self.inputs:
             #Relative position to wall. X & Y. [-1, 1]
@@ -507,7 +526,9 @@ class aquarium(object):
 
         for i in range(self.fish_xy.shape[0]):
             x,y = self.fish_xy[i,:]
-            dx,dy = self.acc_fish[i,:]
+            #dx,dy = self.acc_fish[i,:]
+            dx,dy = self.inputs[i,4:6]
+            
             self.fish_acc_arrow[i].set_data([x,x+dx],[y,y+dy])
 
         self.plot_text.set_text("Fish killed = "+str(self.eaten))
@@ -537,8 +558,8 @@ if __name__ == '__main__':
                         'max_acc_pred': 0.15, 
                         'eat_radius': 0.05,
                        'weight_range': 1, 'nbr_of_hidden_neurons': 5, 'nbr_of_outputs': 2,
-                       'visibility_range': 0.5, 'rand_walk_brain_set': [], 'input_type': 'weighted',
-                       'input_set': ["enemy_pos", "friend_pos", "wall"], 'safe_boundary': True}
+                       'visibility_range': 0.5, 'rand_walk_brain_set': [], 'input_type': 'closest',
+                       'input_set': ["enemy_pos", "friend_pos", "enemy_vel","wall"], 'safe_boundary': True}
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_parameters)
