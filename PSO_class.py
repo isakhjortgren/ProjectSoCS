@@ -87,6 +87,21 @@ class PSO(object):
         for i_particle in range(self.nbr_of_particles):
             array = self.positions_matrix[i_particle, :]
 
+            #check brain
+            tmp_brain = self.list_of_aquarium[0].prey_brain
+            tmp_brain.update_brain(array)
+            defined_inputs = np.zeros(self.nbr_of_inputs, 4)
+            enemy_pso_start_index = 0
+            if 'friend_vel' in self.aquarium_parameters['input_set']:
+                enemy_pso_start_index += 2
+            if 'friend_pos' in self.aquarium_parameters['input_set']:
+                enemy_pso_start_index += 2
+            defined_inputs[:, enemy_pso_start_index] = [0, -0.5, 0, 0.5]
+            defined_inputs[:, enemy_pso_start_index + 1] = [-0.5, 0, 0.5, 0]
+            for i in range(4):
+
+
+
             list_of_result = Parallel(n_jobs=nrb_of_cores)(delayed(self.run_one_aquarium)(i_aquarium, array)
                                                            for i_aquarium in self.list_of_aquarium)
 
