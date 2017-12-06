@@ -82,8 +82,12 @@ class PSO(object):
         index_with_best_val_fitness = np.argmax(self.list_of_validation_results)
         return self.list_of_swarm_best_positions[index_with_best_val_fitness]
 
-    def run_all_particles(self):
+    def run_all_particles(self,training_type):
         particle_values = np.zeros(self.nbr_of_particles)
+        
+        if not (training_type=="pred" or training_type=="prey"):
+            raise ValueError("'"+ str(training_type)+"' is not a recognized training_type")
+
         for i_particle in range(self.nbr_of_particles):
             array = self.positions_matrix[i_particle, :]
 
@@ -99,6 +103,7 @@ class PSO(object):
             defined_inputs[:,enemy_pso_start_index]      = np.array([0,     -0.5,   0,      0.5])
             defined_inputs[:,enemy_pso_start_index+1]      = np.array([-0.5,   0,      0.5,    0])
 
+            passed_test = True
             for i in range(4):
                 tmp_input = defined_inputs[i,:]
                 tmp_decicion = tmp_brain.make_decision(tmp_input)
@@ -108,35 +113,38 @@ class PSO(object):
                     (np.linalg.norm(tmp_enemy_vector) * np.linalg.norm(tmp_decicion))
                 angle = np.arccos(np.clip(dot_prod, -1, 1))*180/3.1415
 
-                raise NotImplementedError("Class is not finished, see comment below")
+                #raise NotImplementedError("Class is not finished, see comment below")
                 """" 
                 Below the score is set to zero if angle<70. This is bad for sharks and good for fishes. 
                 This test is not designed for sharks yet as sharks _should_ have angle<70. 
                 How can we in this function tell if it's a pred brain or prey brain we're testing? 
                 """
-
-                if( angle < 70 ):
-                    list_of_result = 0
+                if training_type == "prey" and angle < 45:                        
+                    passed_test = False
                     break
-                else:
-                    list_of_result = Parallel(n_jobs=nrb_of_cores)(delayed(self.run_one_aquarium)(i_aquarium, array)
-                                                           for i_aquarium in self.list_of_aquarium)
-
-
+       
+                elif training_type == "pred" and  angle > 90:
+                    passed_test = False
+                    break
+            #END FOR LOOP             
+            
+            if passed_test:
+                print(training_type,"Brain passed test",sep="")
+                list_of_result = Parallel(n_jobs=nrb_of_cores)(delayed(self.run_one_aquarium)(i_aquarium, array)
+                                                               for i_aquarium in self.list_of_aquarium)    
+            else:
+                list_of_result = -1000   
 
             particle_values[i_particle] = np.mean(list_of_result)
         return particle_values
 
-    def run_pso(self):
+    def run_pso(self,training_type):
         
         start_time = time.time()
 
         for i_iteration in range(self.nbr_of_iterations):
-            print('pso particle ', i_iteration+1, ' out of ', self.nbr_of_iterations)
             
             elapsed_sec = time.time()-start_time
-
-        
             if elapsed_sec<1:
                 time_string = ""
             else:
@@ -146,13 +154,11 @@ class PSO(object):
                 ETA_h = int(ETA_sec_tot//3600)
                 ETA_min = int((ETA_sec_tot-3600*ETA_h) // 60)
                 ETA_sec = int(ETA_sec_tot-3600*ETA_h-60*ETA_min)
-
                 time_string = "ETA: " +str(ETA_h) +"h " +str(ETA_min) + "m " + str(ETA_sec) +"s"
 
-            print("Epoch number", i_iteration+1,"out of", self.nbr_of_iterations, time_string)
+            #print("Epoch number", i_iteration+1,"out of", self.nbr_of_iterations, time_string)
 
-
-            particle_values = self.run_all_particles()
+            particle_values = self.run_all_particles(training_type)
 
             iteration_best = np.max(particle_values)
             if iteration_best > self.swarm_best_value:

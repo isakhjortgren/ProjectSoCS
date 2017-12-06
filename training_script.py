@@ -5,9 +5,9 @@ from Aquarium import aquarium
 import numpy as np
 
 
-aquarium_parameters = {'nbr_of_prey': 15, 'nbr_of_pred': 2, 'size_X': 2, 'size_Y': 2, 'max_speed_prey': 0.1,
-                       'max_speed_pred': 0.2, 'max_acc_prey': 0.3, 'max_acc_pred': 0.1, 'eat_radius': 0.05,
-                       'weight_range': 1, 'nbr_of_hidden_neurons': 4, 'nbr_of_outputs': 2,
+aquarium_parameters = {'nbr_of_prey': 20, 'nbr_of_pred': 3, 'size_X': 2, 'size_Y': 2, 'max_speed_prey': 0.2,
+                       'max_speed_pred': 0.2, 'max_acc_prey': 0.2, 'max_acc_pred': 0.2, 'eat_radius': 0.05,
+                       'weight_range': 0.5, 'nbr_of_hidden_neurons': 4, 'nbr_of_outputs': 2,
                        'visibility_range': 0.5, 'rand_walk_brain_set': [], 'input_type': 'closest',
                        'input_set': ["enemy_pos", "friend_pos", "wall"], 'safe_boundary': False}
 
@@ -36,7 +36,7 @@ try:
 
             pso_prey.particle_best_position = list_of_pso_prey[-1].particle_best_position
             pso_prey.positions_matrix = list_of_pso_prey[-1].particle_best_position
-            pso_prey.particle_best_value = pso_prey.run_all_particles()
+            pso_prey.particle_best_value = pso_prey.run_all_particles("prey")
             pso_prey.swarm_best_position = pso_prey.positions_matrix[np.argmax(pso_prey.particle_best_value), :]
 
             pso_prey.positions_matrix = list_of_pso_prey[-1].positions_matrix
@@ -48,7 +48,7 @@ try:
             pso_prey = PSO(aquarium_parameters=aquarium_parameters, train_prey=True)
             pso_prey.nbr_of_iterations = prey_iterations
 
-        pso_prey.run_pso()
+        pso_prey.run_pso("prey")
         aquarium_parameters['rand_walk_brain_set'] = []
         best_prey_brain = pso_prey.swarm_best_position
 
@@ -66,7 +66,7 @@ try:
         if len(list_of_pso_pred) > 0:
             pso_pred.particle_best_position = list_of_pso_pred[-1].particle_best_position
             pso_pred.positions_matrix = list_of_pso_pred[-1].particle_best_position
-            pso_pred.particle_best_value = pso_pred.run_all_particles()
+            pso_pred.particle_best_value = pso_pred.run_all_particles("pred")
             pso_pred.swarm_best_position = pso_pred.positions_matrix[np.argmax(pso_pred.particle_best_value), :]
 
             pso_pred.positions_matrix = list_of_pso_pred[-1].positions_matrix
@@ -74,7 +74,7 @@ try:
             pso_pred.inertia_weight = list_of_pso_pred[-1].inertia_weight
 
 
-        pso_pred.run_pso()
+        pso_pred.run_pso("pred")
         best_pred_brain = pso_pred.swarm_best_position
 
 
@@ -88,4 +88,3 @@ finally:
     with open('TrainingData.p', 'wb') as f:
         pickle.dump(pso_data, f)
         print('data saved!')
-
