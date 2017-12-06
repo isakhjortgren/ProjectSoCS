@@ -70,7 +70,7 @@ class aquarium(object):
         self.fish_xy_start = np.matrix(random(size=(nbr_of_prey+nbr_of_pred,2)))\
                             *np.matrix([[size_X, 0], [0,size_Y]])
         
-        self.brain_input = None  #TODO: Only for debug purposes 
+        self.brain_input = None 
 
         self.interval_pred = list(range(self.nbr_of_pred))
         self.interval_prey = list(range(self.nbr_of_pred, self.nbr_of_prey + self.nbr_of_pred))
@@ -92,14 +92,14 @@ class aquarium(object):
 
         self.rare_bug_counter = None
 
-    def neighbourhood(self, distances):
+    def neighbourhood_closest(self, distances):
         return np.exp(-distances**2/(2*self.visibility_range**2)) 
 
-    def calculate_inputs(self):
+    def calculate_inputs_closest(self):
         
         next_col = 0
 
-        n_preds = self.interval_pred[-1] +1
+        n_preds = len(self.interval_pred)
         n_preys = len(self.interval_prey)
 
         N = len(self.fish_xy) # also equal to (n_preds + n_preys)
@@ -113,8 +113,6 @@ class aquarium(object):
         x_diff = self.x_diff 
         y_diff = self.y_diff
 
-        
-        
         ## Derived matricis ##
         distances = np.sqrt(x_diff**2 + y_diff**2)
         inv_distances = 1/(distances+0.000000001)
@@ -160,27 +158,10 @@ class aquarium(object):
             return_matrix[:n_preds, next_col]       = -x_diff[i_es, j_es]* neighbr_mat[i_es,j_es ]
             return_matrix[:n_preds, next_col + 1]   = -y_diff[i_es, j_es]* neighbr_mat[i_es,j_es ]
 
-
-
-            next_col += 2
-        
-        ## PREDETORS ##
-        
-        if "enemy_vel" in self.inputs:
-            # Pred-Prey: X & Y. velocity
-            temp_matrix = neighbr_mat[n_preds:, :n_preds] * inv_vel_distances[n_preds:, :n_preds]
-            return_matrix[:n_preds, next_col] = 1/n_preys * np.sum(temp_matrix * v_x_diff[n_preds:, :n_preds], axis=0)
-            return_matrix[:n_preds, next_col+1] = 1/n_preys * np.sum(temp_matrix * v_y_diff[n_preds:, :n_preds], axis=0)
-
-            # Prey-Pred: X & Y. velocity
-            temp_matrix = neighbr_mat[:n_preds, n_preds:] * inv_vel_distances[:n_preds, n_preds:]
-            return_matrix[n_preds:, next_col] = (1 / n_preds) * np.sum(temp_matrix * v_x_diff[:n_preds, n_preds:],axis=0)
-            return_matrix[n_preds:, next_col + 1] = (1 / n_preds) * np.sum(temp_matrix * v_y_diff[:n_preds, n_preds:], axis=0)
-
             next_col += 2
 
         if "wall" in self.inputs:
-            # TODO: Relative position to wall. X & Y. [-1, 1]
+            #Relative position to wall. X & Y. [-1, 1]
             return_matrix[:, next_col] = 2*self.fish_xy[:,0]/self.size_X-1
             return_matrix[:, next_col+1] = 2*self.fish_xy[:,1]/self.size_Y-1
 
@@ -198,7 +179,6 @@ class aquarium(object):
         acc_norm = np.linalg.norm(self.acc_fish,axis=1)
         
         self.acc_fish *= self.max_acc[:,np.newaxis]
-        
         
         indices = np.where(acc_norm>1)
         if len(indices)>0:
@@ -230,15 +210,11 @@ class aquarium(object):
 
             self.acc_fish[i_es,:] += strength[:,np.newaxis] * col_vec / distances[:,np.newaxis] 
             self.acc_fish[j_es,:] -= strength[:,np.newaxis] * col_vec / distances[:,np.newaxis] 
-
-          
-            if math.isnan(self.fish_xy[0,0]):
-                raise RuntimeError("NaN value in coordinate")
-
+        
+            
         # Integrate new position and velocity.
         self.fish_xy += self.fish_vel*dt + 0.5*self.acc_fish*dt*dt
         self.fish_vel += self.acc_fish*dt 
-
 
         # Effect of boundary, fish either stops or dies
         if self.safe_boundary:
@@ -251,11 +227,11 @@ class aquarium(object):
             self.fish_xy[indices,0] =   self.size_X - random(len(indices)) / (self.size_X * 500)
             self.fish_vel[indices,0] =  0
 
-            indices = np.where(self.fish_xy[:,0] < 0)
+            indices = np.where(self.fish_xy[:,1] < 0)
             self.fish_xy[indices,1] =   random(len(indices)) / (self.size_Y * 500)
             self.fish_vel[indices,1] =  0
 
-            indices = np.where(self.fish_xy[:,0] > self.size_Y)
+            indices = np.where(self.fish_xy[:,1] > self.size_Y)
             self.fish_xy[indices,1] =   self.size_X - random(len(indices)) / (self.size_Y * 500)
             self.fish_vel[indices,1] =  0
         else:
@@ -282,24 +258,12 @@ class aquarium(object):
                 self.remove_fishes(off_boundary)
                 self.prey_score -= len(off_boundary) / (time + self.MAX_TIME)
 
-
         # Check shark eats fish
         n_preds = len(self.interval_pred)
         n_preys = len(self.interval_prey)
         
-        try:
-            x_diff = np.column_stack([self.fish_xy[n_preds:,0]]*n_preds) - np.row_stack([self.fish_xy[:n_preds,0]]*n_preys) 
-            y_diff = np.column_stack([self.fish_xy[n_preds:,1]]*n_preds) - np.row_stack([self.fish_xy[:n_preds,1]]*n_preys)
-        except ValueError as vl:
-            print("-"*20)
-            print("Exception caught in timestep() at check for shark eating")
-            print(self.fish_xy)
-            print(self.interval_pred)
-            print(self.interval_prey)
-            print("n_preds",n_preds)
-            print("n_preys",n_preys)
-            print("-"*20)
-            raise RuntimeError("interval variables and list of fish positions do not match, see error report above")
+        x_diff = np.column_stack([self.fish_xy[n_preds:,0]]*n_preds) - np.row_stack([self.fish_xy[:n_preds,0]]*n_preys) 
+        y_diff = np.column_stack([self.fish_xy[n_preds:,1]]*n_preds) - np.row_stack([self.fish_xy[:n_preds,1]]*n_preys)
 
         eaten_indicies =    (abs(x_diff)<self.eat_radius) & (abs(y_diff)<self.eat_radius) 
         if True in eaten_indicies:
@@ -310,7 +274,6 @@ class aquarium(object):
             self.time_last_snack = time
             self.prey_score -= len(indices_of_eaten_fish)/(time + self.MAX_TIME)
   
-
         # Correct for max velocities 
         vel_magnitudes = np.linalg.norm(self.fish_vel,axis=1)
         indices = vel_magnitudes>self.max_vels
@@ -318,6 +281,10 @@ class aquarium(object):
             self.fish_vel[indices,:] =  self.max_vels[indices,np.newaxis]  \
                                         * self.fish_vel[indices,:] \
                                         / vel_magnitudes[indices,np.newaxis]         
+
+        #Simply error crashes with NaN-values
+        if math.isnan(self.fish_xy[0,0]):
+                raise RuntimeError("NaN value in coordinate")
 
 
     def set_videoutput(self, filename, fps=15, dpi=100):
@@ -426,12 +393,9 @@ class aquarium(object):
 
         self.plot_text.set_text("Fish killed = "+str(self.eaten))
         self.video_writer.grab_frame()
+    
     def remove_fishes(self,indices):
         indices = list(set(indices))
-    
-        if max(indices) >= self.fish_xy.shape[0] :
-            raise RuntimeError("This part shouldn't ever run if we have good code")
-            return
 
         self.fish_xy  = np.delete(self.fish_xy,  indices, axis=0)
         self.fish_vel = np.delete(self.fish_vel, indices, axis=0)
@@ -443,20 +407,6 @@ class aquarium(object):
         for i in range(len(indices)):
             if len(self.interval_prey)>0:
                 self.interval_prey.pop()
-            else:
-                raise RuntimeError("Stop writting bad code!")
-
-        # Crazy error check, ENGAGE! 
-        if self.fish_xy.shape[0] != len(self.interval_pred) + len(self.interval_prey):
-            print("-"*20)
-            print("Error at exit of remove_fishes()")
-            print(self.fish_xy)
-            print(self.interval_pred)
-            print(self.interval_prey)
-            print("indices:", indices)
-            print("-"*20)
-            raise RuntimeError("interval variables and list of fish positions do not match, see error report above")
-
 
 
 if __name__ == '__main__':
@@ -465,7 +415,7 @@ if __name__ == '__main__':
                        'max_speed_pred': 0.2, 'max_acc_prey': 0.3, 'max_acc_pred': 0.1, 'eat_radius': 0.05,
                        'weight_range': 1, 'nbr_of_hidden_neurons': 5, 'nbr_of_outputs': 2,
                        'visibility_range': 0.5, 'rand_walk_brain_set': [],
-                       'input_set': ["enemy_pos", "friend_pos", "wall"], 'safe_boundary': False}
+                       'input_set': ["enemy_pos", "friend_pos", "wall"], 'safe_boundary': True}
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_parameters)
@@ -473,5 +423,5 @@ if __name__ == '__main__':
     start_time = time.time()
     print(a.run_simulation())
 
-    print("LOL in: ", round(time.time()-start_time,3), "s")
+    print("Done in: ", round(time.time()-start_time,3), "s")
 

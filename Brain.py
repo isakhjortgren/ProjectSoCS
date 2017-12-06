@@ -2,8 +2,11 @@ import numpy as np
 
 
 class Brain(object):
-    def __init__(self, nbr_of_hidden_neurons, nbr_of_inputs=10, nbr_of_outputs=2,
-                 weight_range=5):
+    def __init__(self, nbr_of_hidden_neurons=None, nbr_of_inputs=10, nbr_of_outputs=2,
+                 weight_range=0.5):
+        if not nbr_of_hidden_neurons:
+            nbr_of_hidden_neurons = int((nbr_of_inputs + nbr_of_outputs)/2)
+
         self.nbr_of_hidden_neurons=nbr_of_hidden_neurons
         self.nbr_of_inputs=nbr_of_inputs
         self.nbr_of_outputs=nbr_of_outputs
