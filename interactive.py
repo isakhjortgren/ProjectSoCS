@@ -14,8 +14,8 @@ class PlotHandler:
     def __init__(self,figure,aq_par,pred_brain,prey_brain):
         self.aq = aquarium(**aq_par)
         
-        self.aq.pred_brain = pred_brain
-        self.aq.prey_brain = prey_brain
+        self.aq.pred_brain.update_brain(pred_brain)
+        self.aq.prey_brain.update_brain(prey_brain)
 
         self.figure = figure
 
@@ -157,9 +157,9 @@ class PlotHandler:
 
 
 
-if __name__ == '__main__':
 
-    with open('TrainingData-3.p', 'rb') as f:
+def main():
+    with open('TrainingData.p', 'rb') as f:
         pso_data = pickle.load(f)
 
     pred_brain = pso_data["list_of_pso_prey"][-1]
@@ -167,9 +167,15 @@ if __name__ == '__main__':
 
     aq_par = prey_brain.aquarium_parameters
 
+    aq_par["nbr_of_prey"] = 2
+    aq_par["nbr_of_pred"] = 2
+
     fig = plt.figure()
-    ph = PlotHandler(fig,aq_par,pred_brain.swarm_best_position , prey_brain.swarm_best_position)
+    ph = PlotHandler(fig, aq_par, pred_brain.swarm_best_position, prey_brain.swarm_best_position)
 
 
     print("Let the Show begin")
     plt.show()
+
+if __name__ == '__main__':
+    main()
