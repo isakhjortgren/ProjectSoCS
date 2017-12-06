@@ -88,21 +88,21 @@ class PSO(object):
         if not (training_type=="pred" or training_type=="prey"):
             raise ValueError("'"+ str(training_type)+"' is not a recognized training_type")
 
+        
+        tmp_brain = self.list_of_aquarium[0].prey_brain
+        defined_inputs = np.zeros((4, self.nbr_of_inputs))
+        enemy_pso_start_index = 0
+        if 'friend_vel' in self.aquarium_parameters['input_set']:
+            enemy_pso_start_index += 2
+        if 'friend_pos' in self.aquarium_parameters['input_set']:
+            enemy_pso_start_index += 2
+        defined_inputs[:,enemy_pso_start_index]     = np.array([0,     -0.5,   0,      0.5])
+        defined_inputs[:,enemy_pso_start_index+1]   = np.array([-0.5,   0,      0.5,    0])
+
         for i_particle in range(self.nbr_of_particles):
             array = self.positions_matrix[i_particle, :]
-
-            #check brain
-            tmp_brain = self.list_of_aquarium[0].prey_brain
             tmp_brain.update_brain(array)
-            defined_inputs = np.zeros((4, self.nbr_of_inputs))
-            enemy_pso_start_index = 0
-            if 'friend_vel' in self.aquarium_parameters['input_set']:
-                enemy_pso_start_index += 2
-            if 'friend_pos' in self.aquarium_parameters['input_set']:
-                enemy_pso_start_index += 2
-            defined_inputs[:,enemy_pso_start_index]      = np.array([0,     -0.5,   0,      0.5])
-            defined_inputs[:,enemy_pso_start_index+1]      = np.array([-0.5,   0,      0.5,    0])
-
+            
             passed_test = True
             for i in range(4):
                 tmp_input = defined_inputs[i,:]
@@ -113,20 +113,14 @@ class PSO(object):
                     (np.linalg.norm(tmp_enemy_vector) * np.linalg.norm(tmp_decicion))
                 angle = np.arccos(np.clip(dot_prod, -1, 1))*180/3.1415
 
-                #raise NotImplementedError("Class is not finished, see comment below")
-                """" 
-                Below the score is set to zero if angle<70. This is bad for sharks and good for fishes. 
-                This test is not designed for sharks yet as sharks _should_ have angle<70. 
-                How can we in this function tell if it's a pred brain or prey brain we're testing? 
-                """
-                if training_type == "prey" and angle < 45:                        
+                if training_type == "prey" and angle<60:                        
                     passed_test = False
                     break
        
-                elif training_type == "pred" and  angle > 90:
+                elif training_type == "pred" and angle>90:
                     passed_test = False
                     break
-            #END FOR LOOP             
+            #END FOR LOOP 
             
             if passed_test:
                 print(training_type,"Brain passed test",sep="")

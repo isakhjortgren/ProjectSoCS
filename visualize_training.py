@@ -3,7 +3,7 @@ from Aquarium import aquarium
 import matplotlib.pyplot as plt
 import matplotlib
 
-with open('TrainingData-6.p', 'rb') as f:
+with open('TrainingData.p', 'rb') as f:
     pso_data = pickle.load(f)
 
 list_of_pso_pred = pso_data['list_of_pso_pred']

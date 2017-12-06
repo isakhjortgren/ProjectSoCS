@@ -84,7 +84,7 @@ except KeyboardInterrupt:
 except RuntimeError:
     traceback.print_exc()
 finally:
-    pso_data = {'list_of_pso_pred': list_of_pso_pred}
+    pso_data = {'list_of_pso_pred': list_of_pso_pred, 'list_of_pso_prey': list_of_pso_prey}
     with open('TrainingData.p', 'wb') as f:
         pickle.dump(pso_data, f)
         print('data saved!')
