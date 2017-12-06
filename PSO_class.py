@@ -82,60 +82,77 @@ class PSO(object):
         index_with_best_val_fitness = np.argmax(self.list_of_validation_results)
         return self.list_of_swarm_best_positions[index_with_best_val_fitness]
 
-    def run_all_particles(self):
+    def run_all_particles(self,training_type):
         particle_values = np.zeros(self.nbr_of_particles)
+        
+        if not (training_type=="pred" or training_type=="prey"):
+            raise ValueError("'"+ str(training_type)+"' is not a recognized training_type")
+
+        
+        tmp_brain = self.list_of_aquarium[0].prey_brain
+        defined_inputs = np.zeros((4, self.nbr_of_inputs))
+        enemy_pso_start_index = 0
+        if 'friend_vel' in self.aquarium_parameters['input_set']:
+            enemy_pso_start_index += 2
+        if 'friend_pos' in self.aquarium_parameters['input_set']:
+            enemy_pso_start_index += 2
+        defined_inputs[:,enemy_pso_start_index]     = np.array([0,     -0.5,   0,      0.5])
+        defined_inputs[:,enemy_pso_start_index+1]   = np.array([-0.5,   0,      0.5,    0])
+
         for i_particle in range(self.nbr_of_particles):
             array = self.positions_matrix[i_particle, :]
-
-            #check brain
-            tmp_brain = self.list_of_aquarium[0].prey_brain
             tmp_brain.update_brain(array)
-            defined_inputs = np.zeros(self.nbr_of_inputs, 4)
-            enemy_pso_start_index = 0
-            if 'friend_vel' in self.aquarium_parameters['input_set']:
-                enemy_pso_start_index += 2
-            if 'friend_pos' in self.aquarium_parameters['input_set']:
-                enemy_pso_start_index += 2
-            defined_inputs[:, enemy_pso_start_index] = [0, -0.5, 0, 0.5]
-            defined_inputs[:, enemy_pso_start_index + 1] = [-0.5, 0, 0.5, 0]
+            
+            passed_test = True
             for i in range(4):
+                tmp_input = defined_inputs[i,:]
+                tmp_decicion = tmp_brain.make_decision(tmp_input)
+                tmp_enemy_vector = tmp_input[enemy_pso_start_index:enemy_pso_start_index+2]
 
+                dot_prod = np.dot(tmp_enemy_vector, tmp_decicion) / \
+                    (np.linalg.norm(tmp_enemy_vector) * np.linalg.norm(tmp_decicion))
+                angle = np.arccos(np.clip(dot_prod, -1, 1))*180/3.1415
 
-
-            list_of_result = Parallel(n_jobs=nrb_of_cores)(delayed(self.run_one_aquarium)(i_aquarium, array)
-                                                           for i_aquarium in self.list_of_aquarium)
+                if training_type == "prey" and angle<60:                        
+                    passed_test = False
+                    break
+       
+                elif training_type == "pred" and angle>90:
+                    passed_test = False
+                    break
+            #END FOR LOOP 
+            
+            if passed_test:
+                print(training_type,"Brain passed test",sep="")
+                list_of_result = Parallel(n_jobs=nrb_of_cores)(delayed(self.run_one_aquarium)(i_aquarium, array)
+                                                               for i_aquarium in self.list_of_aquarium)    
+            else:
+                list_of_result = -1000   
 
             particle_values[i_particle] = np.mean(list_of_result)
         return particle_values
 
-    def run_pso(self):
+    def run_pso(self,training_type):
         
         start_time = time.time()
 
         for i_iteration in range(self.nbr_of_iterations):
-            print('pso particle ', i_iteration+1, ' out of ', self.nbr_of_iterations)
             
             elapsed_sec = time.time()-start_time
+            if elapsed_sec<1:
+                time_string = ""
+            else:
+                time_per_iteration = elapsed_sec/i_iteration
+                iterations_left = self.nbr_of_iterations - i_iteration
+                ETA_sec_tot = time_per_iteration*iterations_left
+                ETA_h = int(ETA_sec_tot//3600)
+                ETA_min = int((ETA_sec_tot-3600*ETA_h) // 60)
+                ETA_sec = int(ETA_sec_tot-3600*ETA_h-60*ETA_min)
+                time_string = "ETA: " +str(ETA_h) +"h " +str(ETA_min) + "m " + str(ETA_sec) +"s"
 
-            try:
-                if elapsed_sec<1:
-                    time_string = ""
-                else:
-                    time_per_iteration = elapsed_sec/i_iteration
-                    iterations_left = self.nbr_of_iterations - i_iteration
-                    ETA_sec_tot = time_per_iteration*iterations_left
-                    ETA_h = int(ETA_sec_tot//3600)
-                    ETA_min = int((ETA_sec_tot-3600*ETA_h) // 60)
-                    ETA_sec = int(ETA_sec_tot-3600*ETA_h-60*ETA_min)
+            #print("Epoch number", i_iteration+1,"out of", self.nbr_of_iterations, time_string)
 
-                    time_string = "ETA: " +str(ETA_h) +"h " +str(ETA_min) + "m " + str(ETA_sec) +"s"
-            except: 
-                time_string = "ETA calculation crashed"  
-
-            print("Epoch number", i_iteration+1,"out of", self.nbr_of_iterations, time_string)
-
-
-            particle_values = self.run_all_particles()
+            particle_values = self.run_all_particles(training_type)
 
             iteration_best = np.max(particle_values)
             if iteration_best > self.swarm_best_value:
