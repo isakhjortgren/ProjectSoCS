@@ -7,7 +7,7 @@ import numpy as np
 aquarium_parameters = {'nbr_of_prey': 15, 'nbr_of_pred': 2, 'size_X': 2, 'size_Y': 2, 'max_speed_prey': 0.1,
                        'max_speed_pred': 0.2, 'max_acc_prey': 0.3, 'max_acc_pred': 0.1, 'eat_radius': 0.05,
                        'weight_range': 1, 'nbr_of_hidden_neurons': 4, 'nbr_of_outputs': 2,
-                       'visibility_range': 0.5, 'rand_walk_brain_set': [],
+                       'visibility_range': 0.5, 'rand_walk_brain_set': [], 'input_type': 'closest',
                        'input_set': ["enemy_pos", "friend_pos", "wall"], 'safe_boundary': False}
 
 list_of_pso_prey = list()
