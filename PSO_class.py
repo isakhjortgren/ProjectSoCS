@@ -101,14 +101,19 @@ class PSO(object):
 
             for i in range(4):
                 tmp_input = defined_inputs[i,:]
-
                 tmp_decicion = tmp_brain.make_decision(tmp_input)
-
                 tmp_enemy_vector = tmp_input[enemy_pso_start_index:enemy_pso_start_index+2]
 
-                dot_prod = np.dot(tmp_enemy_vector, tmp_decicion) / (np.linalg.norm(tmp_enemy_vector) * np.linalg.norm(tmp_decicion))
-
+                dot_prod = np.dot(tmp_enemy_vector, tmp_decicion) / \
+                    (np.linalg.norm(tmp_enemy_vector) * np.linalg.norm(tmp_decicion))
                 angle = np.arccos(np.clip(dot_prod, -1, 1))*180/3.1415
+
+                raise NotImplementedError("Class is not finished, see comment below")
+                """" 
+                Below the score is set to zero if angle<70. This is bad for sharks and good for fishes. 
+                This test is not designed for sharks yet as sharks _should_ have angle<70. 
+                How can we in this function tell if it's a pred brain or prey brain we're testing? 
+                """
 
                 if( angle < 70 ):
                     list_of_result = 0
@@ -131,20 +136,18 @@ class PSO(object):
             
             elapsed_sec = time.time()-start_time
 
-            try:
-                if elapsed_sec<1:
-                    time_string = ""
-                else:
-                    time_per_iteration = elapsed_sec/i_iteration
-                    iterations_left = self.nbr_of_iterations - i_iteration
-                    ETA_sec_tot = time_per_iteration*iterations_left
-                    ETA_h = int(ETA_sec_tot//3600)
-                    ETA_min = int((ETA_sec_tot-3600*ETA_h) // 60)
-                    ETA_sec = int(ETA_sec_tot-3600*ETA_h-60*ETA_min)
+        
+            if elapsed_sec<1:
+                time_string = ""
+            else:
+                time_per_iteration = elapsed_sec/i_iteration
+                iterations_left = self.nbr_of_iterations - i_iteration
+                ETA_sec_tot = time_per_iteration*iterations_left
+                ETA_h = int(ETA_sec_tot//3600)
+                ETA_min = int((ETA_sec_tot-3600*ETA_h) // 60)
+                ETA_sec = int(ETA_sec_tot-3600*ETA_h-60*ETA_min)
 
-                    time_string = "ETA: " +str(ETA_h) +"h " +str(ETA_min) + "m " + str(ETA_sec) +"s"
-            except: 
-                time_string = "ETA calculation crashed"  
+                time_string = "ETA: " +str(ETA_h) +"h " +str(ETA_min) + "m " + str(ETA_sec) +"s"
 
             print("Epoch number", i_iteration+1,"out of", self.nbr_of_iterations, time_string)
 
