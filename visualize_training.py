@@ -59,7 +59,7 @@ def visulaize_a_new_aquarium():
     pso_prey = list_of_pso_prey[-1]
     pso_pred = list_of_pso_pred[-1]
     aquarium_1 = aquarium(**pso_pred.aquarium_parameters)
-    print(pso_pred.aquarium_parameters['input_set'])
+    print(pso_pred.aquarium_parameters)
     print('safe boundary? ', pso_pred.aquarium_parameters['safe_boundary'])
     # best_pred_brain = pso_pred.get_particle_position_with_best_val_fitness()
     best_pred_brain = pso_pred.get_particle_position_with_best_val_fitness()
