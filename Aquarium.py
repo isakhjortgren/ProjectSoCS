@@ -472,7 +472,7 @@ if __name__ == '__main__':
                         'eat_radius': 0.05,
                        'weight_range': 1, 'nbr_of_hidden_neurons': 5, 'nbr_of_outputs': 2,
                        'visibility_range': 0.5, 'rand_walk_brain_set': ["prey", "pred"],
-                       'input_set': ["enemy_pos","friend_pos","enemy_vel", "wall"], 'safe_boundary': True}
+                       'input_set': ["enemy_pos","friend_pos", "wall"], 'safe_boundary': True}
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_parameters)

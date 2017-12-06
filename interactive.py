@@ -8,11 +8,6 @@ import pickle
 
 from Aquarium import aquarium
 
-
-
-
-
-
 class PlotHandler:
     def __init__(self,figure,aq_par,pred_brain,prey_brain):
         self.aq = aquarium(**aq_par)
@@ -43,7 +38,7 @@ class PlotHandler:
         self.circle_pressed = [False]*(len(self.aq.fish_xy_start))
 
         # Setup the lines to show input vectors
-        line_color = ["blue","orange" ]
+        line_color = ["blue","orange","black" ]
 
         self.input_arrows = []
         nbr_of_inputs = self.aq.pred_brain.nbr_of_inputs//2
@@ -165,7 +160,7 @@ pred_brain = pso_data["list_of_pso_prey"][-1]
 prey_brain = pso_data["list_of_pso_pred"][-1]
 
 aq_par = prey_brain.aquarium_parameters
-
+aq_par["visibility_range"] *= 0.4
 
 fig = plt.figure()
 ph = PlotHandler(fig,aq_par,pred_brain.swarm_best_position , prey_brain.swarm_best_position)
