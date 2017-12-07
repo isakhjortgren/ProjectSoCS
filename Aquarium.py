@@ -204,7 +204,7 @@ class aquarium(object):
 
     def neighbourhood_weighted_linear(self, distances):
         re = np.zeros(distances.shape)
-        indicies = distances>=self.visibility_range
+        indicies = distances<=self.visibility_range
         re[indicies] = 1-distances[indicies]/self.visibility_range
         return re
 
