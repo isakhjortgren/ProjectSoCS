@@ -71,13 +71,15 @@ def visulaize_a_new_aquarium():
     # best_prey_brain = pso_prey.get_particle_position_with_best_val_fitness()
     best_prey_brain = pso_prey.swarm_best_position
     aquarium_1.prey_brain.update_brain(best_prey_brain)
-    aquarium_1.set_videoutput('new_aquarium.mp4', fps=45)
+    aquarium_1.set_videoutput('new_aquarium.mp4', fps=50)
 
     aquarium_1.run_simulation()
 
     with open('FishDataFromPreviousFilm.p', 'wb') as f:
         fish_data = {'vel_over_time': aquarium_1.vel_over_time,
-                'pos_over_time': aquarium_1.pos_over_time}
+                     'pos_over_time': aquarium_1.pos_over_time,
+                     'nbr_prey': aquarium_1.nbr_of_prey,
+                     'nbr_pred': aquarium_1.nbr_of_pred}
         pickle.dump(fish_data, f)
         print('data saved!')
 

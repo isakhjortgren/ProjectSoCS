@@ -507,8 +507,8 @@ class aquarium(object):
             with self.video_writer.saving(self.fig, self.video_filename, self.video_dpi):
                 while time < self.MAX_TIME and self.eaten <= HALF_NBR_FISHES and time-self.time_last_snack<self.MAX_TIME_SINCE_SNACK:
                     self.timestep(dt, time)
-                    self.pos_over_time.append(self.fish_xy)
-                    self.vel_over_time.append(self.fish_vel)
+                    self.pos_over_time.append(np.copy(self.fish_xy))
+                    self.vel_over_time.append(np.copy(self.fish_vel))
                     self.__grab_Frame_()
                     time += dt
                     if time>next_print:
