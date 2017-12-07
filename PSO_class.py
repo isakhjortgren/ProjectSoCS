@@ -123,7 +123,7 @@ class PSO(object):
             #END FOR LOOP 
             
             if passed_test:
-                print(training_type,"Brain passed test",sep="")
+                print(training_type,"Brain: ", i_particle, " passed test",sep="")
                 list_of_result = Parallel(n_jobs=nrb_of_cores)(delayed(self.run_one_aquarium)(i_aquarium, array)
                                                                for i_aquarium in self.list_of_aquarium)    
             else:
@@ -150,7 +150,7 @@ class PSO(object):
                 ETA_sec = int(ETA_sec_tot-3600*ETA_h-60*ETA_min)
                 time_string = "ETA: " +str(ETA_h) +"h " +str(ETA_min) + "m " + str(ETA_sec) +"s"
 
-            #print("Epoch number", i_iteration+1,"out of", self.nbr_of_iterations, time_string)
+            print("Epoch number", i_iteration+1,"out of", self.nbr_of_iterations, time_string)
 
             particle_values = self.run_all_particles(training_type)
 

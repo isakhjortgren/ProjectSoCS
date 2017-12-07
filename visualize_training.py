@@ -3,7 +3,7 @@ from Aquarium import aquarium
 import matplotlib.pyplot as plt
 import matplotlib
 
-with open('TrainingData.p', 'rb') as f:
+with open('TrainingData-8.p', 'rb') as f:
     pso_data = pickle.load(f)
 
 list_of_pso_pred = pso_data['list_of_pso_pred']
@@ -58,6 +58,9 @@ def visulaize_one_aquarium(val_aquarium=0):
 def visulaize_a_new_aquarium():
     pso_prey = list_of_pso_prey[-1]
     pso_pred = list_of_pso_pred[-1]
+    #pso_pred.aquarium_parameters['size_X'] = 5
+    #pso_pred.aquarium_parameters['size_Y'] = 5
+    #pso_pred.aquarium_parameters['nbr_of_prey'] = 40
     aquarium_1 = aquarium(**pso_pred.aquarium_parameters)
     print(pso_pred.aquarium_parameters)
     print('safe boundary? ', pso_pred.aquarium_parameters['safe_boundary'])
