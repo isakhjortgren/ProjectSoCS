@@ -98,6 +98,9 @@ class aquarium(object):
         elif input_type == 'weighted':
             self.calculate_inputs = self.calculate_inputs_weighted
             self.neighbourhood = self.neighbourhood_weighted
+        elif input_type == 'weighted_linear':
+            self.calculate_inputs = self.calculate_inputs_weighted
+            self.neighbourhood = self.neighbourhood_weighted_linear
         else:
             raise ValueError('Use a proper input type you idiot!')
 
@@ -198,6 +201,12 @@ class aquarium(object):
 
     def neighbourhood_weighted(self, distances):
         return np.exp(-distances ** 2 / (2 * self.visibility_range ** 2)) / self.visibility_range
+
+    def neighbourhood_weighted_linear(self, distances):
+        re = np.zeros(distances.shape)
+        indicies = distances>=self.visibility_range
+        re[indicies] = 1-distances[indicies]/self.visibility_range
+        return re
 
     def calculate_inputs_weighted(self):
         next_col = 0
@@ -477,9 +486,9 @@ class aquarium(object):
         time = 0
 
         self.MAX_TIME = 100
-        self.MAX_TIME_SINCE_SNACK = 20
+        self.MAX_TIME_SINCE_SNACK = 40
         self.rare_bug_counter = 0
-        HALF_NBR_FISHES = len(self.fish_xy_start) // 2
+        HALF_NBR_FISHES = self.nbr_of_prey // 2
 
         self.fish_xy = np.copy(self.fish_xy_start )
 
