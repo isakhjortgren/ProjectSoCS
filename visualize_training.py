@@ -79,7 +79,8 @@ def visulaize_a_new_aquarium():
         fish_data = {'vel_over_time': aquarium_1.vel_over_time,
                      'pos_over_time': aquarium_1.pos_over_time,
                      'nbr_prey': aquarium_1.nbr_of_prey,
-                     'nbr_pred': aquarium_1.nbr_of_pred}
+                     'nbr_pred': aquarium_1.nbr_of_pred, 
+                     'fishes_removed': aquarium_1.fishes_removed}
         pickle.dump(fish_data, f)
         print('data saved!')
 

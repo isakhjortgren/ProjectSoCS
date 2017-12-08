@@ -91,6 +91,7 @@ class aquarium(object):
 
         self.pos_over_time = list()
         self.vel_over_time = list()
+        self.fishes_removed = list() 
 
         if input_type == 'closest':
             self.calculate_inputs = self.calculate_inputs_closest
@@ -570,8 +571,11 @@ class aquarium(object):
         self.max_vels = np.delete(self.max_vels, indices, axis=0)
         self.max_acc  = np.delete(self.max_acc,  indices, axis=0)
 
+        self.fishes_removed.append(indices)
+
         self.eaten += len(indices)
         for i in range(len(indices)):
+
             if len(self.interval_prey)>0:
                 self.interval_prey.pop()
 
