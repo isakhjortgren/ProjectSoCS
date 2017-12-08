@@ -33,18 +33,40 @@ def calculate_variance_of_prey():
     plt.ylabel('Variance')
     
 
-def calc_corr():
-    N=20
+def calc_corr(x_pos, y_pos):
+    N = x_pos.shape[0]
+    T = x_pos.shape[1]
+    prey_correlation_x = np.corrcoef(x_pos[3:,T//2:])
+    prey_correlation_y = np.corrcoef(y_pos[3:,T//2:])
+    pred_correlation_x = np.corrcoef(x_pos[:3,T//2:])
+    pred_correlation_y = np.corrcoef(y_pos[:3,T//2:])
+    
 
-    x_pos = np.array(size=(pos_over_time[0].shape[0],len(pos_over_time)))
-    correlation_x = np.x_pos
 
+    #Set diagonal to NaN
+    i_es = list(range(N-3))
+    prey_correlation_x[i_es,i_es] = 100
+    prey_correlation_y[i_es,i_es] = 100
+    i_es = list(range(3))
+    pred_correlation_x[i_es,i_es] = 100
+    pred_correlation_y[i_es,i_es] = 100
 
+    
+    plt.subplot(221)
+    plt.hist(prey_correlation_x.reshape((N-3)**2),30, range=(-1,1))
+    plt.title("Prey X Correlation")
+    plt.subplot(222)
+    plt.hist(prey_correlation_y.reshape((N-3)**2),30, range=(-1,1))
+    plt.title("Prey Y Correlation")
 
-    for i,j in itertools.product(range(N), range(N)):
-        correlation_x = np.correlate(pos_over_time[:],i,],pos_over_time[j,0,:]   )     
+    plt.subplot(223)
+    plt.hist(pred_correlation_x.reshape(9),30, range=(-1,1))
+    plt.title("Pred X Correlation")
+    plt.subplot(224)
+    plt.hist(pred_correlation_y.reshape(9),30, range=(-1,1))
+    plt.title("Pred Y Correlation")
 
-    plt.hist(correlation_x,10)
+    plt.show()
 
 def hotfix(t_pos):
     T= len(t_pos)
@@ -67,8 +89,7 @@ if __name__ == '__main__':
     #calculate_variance_of_prey()
     
     x_pos, y_pos = hotfix(pos_over_time)
-    print()
-    exit()
-    calc_corr()
+    
+    calc_corr(x_pos,y_pos)
     
     plt.show()
