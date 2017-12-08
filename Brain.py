@@ -40,7 +40,10 @@ class attackBrain(Brain):
     
     def make_decision(self, total_inputs):
         enemies = total_inputs[2:4]
-        enemies /= np.linalg.norm(enemies)        
+        
+        n = np.linalg.norm(enemies) 
+        if n>0:
+            enemies /= n       
         friend_pos = total_inputs[0:2]
         output_state = enemies - 0.2*friend_pos
 

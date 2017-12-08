@@ -31,7 +31,7 @@ class PSO(object):
         self.c2 = 2
         self.inertia_weight = 1.4
         self.inertia_weight_lower_bound = 0.3
-        self.beta = 0.99
+        self.beta = 0.995
 
         self.vector_length = (self.nbr_of_inputs + 1) * self.nbr_of_hidden_neurons + (self.nbr_of_hidden_neurons + 1) * self.nbr_of_outputs
         self.positions_matrix = self.weight_range * (2 * np.random.rand(self.nbr_of_particles, self.vector_length) - 1)

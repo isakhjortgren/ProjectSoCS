@@ -98,6 +98,9 @@ class aquarium(object):
         elif input_type == 'weighted':
             self.calculate_inputs = self.calculate_inputs_weighted
             self.neighbourhood = self.neighbourhood_weighted
+        elif input_type == 'weighted_linear':
+            self.calculate_inputs = self.calculate_inputs_weighted
+            self.neighbourhood = self.neighbourhood_weighted_linear
         else:
             raise ValueError('Use a proper input type you idiot!')
 
@@ -198,6 +201,26 @@ class aquarium(object):
 
     def neighbourhood_weighted(self, distances):
         return np.exp(-distances ** 2 / (2 * self.visibility_range ** 2)) / self.visibility_range
+
+    def neighbourhood_weighted_linear(self, distances):
+        re = np.zeros(distances.shape)
+        indicies = distances<=self.visibility_range
+        re[indicies] = 1-distances[indicies]/self.visibility_range
+        for i in range(distances.shape[0]):
+            for j in range(distances.shape[1]):
+                if math.isnan(distances[i,j]):
+                    print(distances)
+                    print(re)
+                    print(indicies)
+                    raise ValueError("nan in dist["+str(i)+","+str(j)+"]")
+                if math.isnan(re[i,j]):
+                    print(distances)
+                    print(re)
+                    print(indicies)
+                    raise ValueError("nan in re["+str(i)+","+str(j)+"]")
+
+
+        return re
 
     def calculate_inputs_weighted(self):
         next_col = 0
@@ -421,7 +444,7 @@ class aquarium(object):
 
         #Simply error crashes with NaN-values
         if math.isnan(self.fish_xy[0,0]):
-                raise RuntimeError("NaN value in coordinate")
+            raise RuntimeError("NaN value in coordinate")
 
 
     def set_videoutput(self, filename, fps=50, dpi=100):
@@ -477,9 +500,9 @@ class aquarium(object):
         time = 0
 
         self.MAX_TIME = 100
-        self.MAX_TIME_SINCE_SNACK = 20
+        self.MAX_TIME_SINCE_SNACK = 40
         self.rare_bug_counter = 0
-        HALF_NBR_FISHES = len(self.fish_xy_start) // 2
+        HALF_NBR_FISHES = self.nbr_of_prey // 2
 
         self.fish_xy = np.copy(self.fish_xy_start )
 
@@ -500,6 +523,7 @@ class aquarium(object):
                             np.ones(self.nbr_of_pred)*self.max_acc_pred, \
                             np.ones(self.nbr_of_prey)*self.max_acc_prey))
 
+        np.seterr(all="raise")
 
         self.time_last_snack = 0
         next_print = 1
@@ -554,19 +578,15 @@ class aquarium(object):
 
 if __name__ == '__main__':
 
-    aquarium_parameters = {'nbr_of_prey': 2, 'nbr_of_pred': 2, 'size_X': 2, 'size_Y': 2, 
-                        'max_speed_prey': 0.2,
-                        'max_speed_pred': 0.2, 
-                        'max_acc_prey': 0.2, 
-                        'max_acc_pred': 0.2, 
-                        'eat_radius': 0.05,
-                       'weight_range': 1, 'nbr_of_hidden_neurons': 5, 'nbr_of_outputs': 2,
-                       'visibility_range': 0.5, 'rand_walk_brain_set': [], 'input_type': 'closest',
-                       'input_set': ["enemy_vel","wall"], 'safe_boundary': True}
+    aquarium_parameters = {'nbr_of_prey': 20, 'nbr_of_pred': 3, 'size_X': 2, 'size_Y': 2, 'max_speed_prey': 0.2,
+                       'max_speed_pred': 0.2, 'max_acc_prey': 0.2, 'max_acc_pred': 0.2, 'eat_radius': 0.05,
+                       'weight_range': 0.5, 'nbr_of_hidden_neurons': 4, 'nbr_of_outputs': 2,
+                       'visibility_range': 0.5, 'rand_walk_brain_set': [], 'input_type': 'weighted_linear',
+                       'input_set': ["enemy_pos", "friend_pos", "wall"], 'safe_boundary': False}
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_parameters)
-    a.set_videoutput('test.mp4',fps=25)
+    #a.set_videoutput('test.mp4',fps=25)
     start_time = time.time()
     print(a.run_simulation())
 
