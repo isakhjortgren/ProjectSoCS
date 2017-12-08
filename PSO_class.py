@@ -99,11 +99,13 @@ class PSO(object):
         defined_inputs[:,enemy_pso_start_index]     = np.array([0,     -0.5,   0,      0.5])
         defined_inputs[:,enemy_pso_start_index+1]   = np.array([-0.5,   0,      0.5,    0])
 
+
         for i_particle in range(self.nbr_of_particles):
             array = self.positions_matrix[i_particle, :]
             tmp_brain.update_brain(array)
             
             passed_test = True
+            #checking enemy
             for i in range(4):
                 tmp_input = defined_inputs[i,:]
                 tmp_decicion = tmp_brain.make_decision(tmp_input)
@@ -120,12 +122,32 @@ class PSO(object):
                 elif training_type == "pred" and angle>90:
                     passed_test = False
                     break
-            #END FOR LOOP 
+            #END FOR LOOP
+
+            # checking wall
+            if passed_test and training_type == "prey":
+
+                defined_inputs_wall = np.zeros((4, self.nbr_of_inputs))
+                defined_inputs_wall[:, -2] = np.array([0.9, -0.9, -0.9, 0.9])
+                defined_inputs_wall[:, -1] = np.array([0.9, 0.9, -0.9, -0.9])
+
+                for i in range(4):
+                    tmp_input = defined_inputs_wall[i, :]
+                    tmp_decicion = tmp_brain.make_decision(tmp_input)
+                    tmp_wall_vector = tmp_input[-2:]
+
+                    dot_prod = np.dot(tmp_wall_vector, tmp_decicion) / \
+                               (np.linalg.norm(tmp_wall_vector) * np.linalg.norm(tmp_decicion))
+                    angle = np.arccos(np.clip(dot_prod, -1, 1)) * 180 / 3.1415
+
+                    if angle < 100:
+                        passed_test = False
+                        break
             
             if passed_test:
                 print(training_type,"Brain: ", i_particle, " passed test",sep="")
                 list_of_result = Parallel(n_jobs=nrb_of_cores)(delayed(self.run_one_aquarium)(i_aquarium, array)
-                                                               for i_aquarium in self.list_of_aquarium)    
+                                                               for i_aquarium in self.list_of_aquarium)
             else:
                 list_of_result = -1000   
 
