@@ -47,7 +47,8 @@ class AnalyzeClass(object):
         plt.xlabel('Time')
         plt.ylabel('Dilation')
         print('jao')
-        
+        plt.tight_layout()
+        plt.savefig(self.figure_name_beginning + "_calclte_Dajläjtion.png")
     
     def calc_corr(self):
         N = self.pos_over_time.shape[1]
@@ -96,8 +97,8 @@ class AnalyzeClass(object):
         plt.title("Pred Y Correlation")
         """ 
         plt.tight_layout()
-        plt.show()
-        #plt.savefig(self.figure_name_beginning + "_posCorr.png")
+        
+        plt.savefig(self.figure_name_beginning + "_posCorr.png")
 
     
     def histogram_of_positions(self):
@@ -112,6 +113,7 @@ class AnalyzeClass(object):
         plt.axis('off')
         plt.title('Position distribution')
         #plt.colorbar()
+        plt.tight_layout()
         plt.savefig(self.figure_name_beginning + "_posHisto.png")
 
 if __name__ == '__main__':
@@ -119,6 +121,5 @@ if __name__ == '__main__':
     a = AnalyzeClass('respawn_data.p')
     a.histogram_of_positions()
     a.calc_corr()
-
     a.calculate_dilation_of_prey()
-    plt.show()
+    
