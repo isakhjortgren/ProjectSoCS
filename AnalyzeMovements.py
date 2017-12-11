@@ -39,7 +39,7 @@ class AnalyzeClass(object):
         radial_mean = radial_from_center.mean(axis=1)
         radial_var = np.std(radial_from_center, axis=1)
     
-        plt.figure()
+        plt.figure(dpi=180)
         plt.plot(self.time_array, radial_mean)
         plt.fill_between(self.time_array, radial_mean - radial_var, radial_mean + radial_var, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
         plt.title('Radial dilation of prey position')
@@ -53,34 +53,51 @@ class AnalyzeClass(object):
         T = self.pos_over_time.shape[0]
         prey_correlation_x = np.corrcoef(self.pos_over_time[:, self.nbr_pred:, 0],rowvar=False)
         prey_correlation_y = np.corrcoef(self.pos_over_time[:, self.nbr_pred:, 1],rowvar=False)
+        
+        """
         pred_correlation_x = np.corrcoef(self.pos_over_time[:, :self.nbr_pred, 0],rowvar=False)
         pred_correlation_y = np.corrcoef(self.pos_over_time[:, :self.nbr_pred, 1],rowvar=False)
-    
+        """
+
+
         #Set diagonal to NaN
         i_es = list(range(self.nbr_prey))
         prey_correlation_x[i_es,i_es] = 100
         prey_correlation_y[i_es,i_es] = 100
+        
+        """
         i_es = list(range(self.nbr_pred))
         pred_correlation_x[i_es,i_es] = 100
         pred_correlation_y[i_es,i_es] = 100
-    
+        """
     
         resolution = 30
     
-        plt.figure()
-        plt.subplot(221)
-        plt.hist(prey_correlation_x.reshape(prey_correlation_x.size),resolution, range=(-1,1))
-        plt.title("Prey X Correlation")
-        plt.subplot(222)
-        plt.hist(prey_correlation_y.reshape(prey_correlation_y.size),resolution, range=(-1,1))
-        plt.title("Prey Y Correlation")
+        plt.figure(num=None, figsize=(4, 7), dpi=180, facecolor='w', edgecolor='k')
+        
+        plt.subplot(211)
+        freq = plt.hist(prey_correlation_x.reshape(prey_correlation_x.size),resolution, range=(-1,1), weights=100*np.ones(prey_correlation_x.size)/prey_correlation_x.size)
+        plt.text(-1, 0.9*np.max(freq[0]) ,"Prey y-coordinate\ncorrelation histogram")
+        #plt.xlabel("s")
+        plt.ylabel("Frequency [%]")
+
+        plt.subplot(212)
+        freq =plt.hist(prey_correlation_y.reshape(prey_correlation_y.size),resolution, range=(-1,1), weights=100*np.ones(prey_correlation_y.size)/prey_correlation_y.size)
+        plt.text(-1, 0.9*np.max(freq[0]) ,"Prey y-coordinate\ncorrelation histogram")
+        plt.ylabel("Frequency [%]")
     
+        """
         plt.subplot(223)
         plt.hist(pred_correlation_x.reshape(pred_correlation_x.size),resolution, range=(-1,1))
         plt.title("Pred X Correlation")
         plt.subplot(224)
         plt.hist(pred_correlation_y.reshape(pred_correlation_y.size),resolution, range=(-1,1))
         plt.title("Pred Y Correlation")
+        """ 
+        plt.tight_layout()
+        plt.show()
+        #plt.savefig(self.figure_name_beginning + "_posCorr.png")
+
     
     def histogram_of_positions(self):
         test_3dMat = self.pos_over_time[:,self.nbr_pred: , :]
@@ -88,17 +105,17 @@ class AnalyzeClass(object):
         all_x_pos = all_x_pos.reshape(all_x_pos.size)
         all_y_pos = test_3dMat[:, :, 1]
         all_y_pos = all_y_pos.reshape(all_y_pos.size)
-        fig = plt.figure()
+        fig = plt.figure(dpi=180)
         plt.hist2d(all_x_pos, all_y_pos, bins=160, range=[(0, self.size), (0,self.size)])
 
         plt.axis('off')
         plt.title('Position distribution')
         #plt.colorbar()
-        plt.savefig("Histogram_of_2d_pos.png")
+        plt.savefig(self.figure_name_beginning + "_posHisto.png")
 
 if __name__ == '__main__':
     a = AnalyzeClass('respawn_data.p')
-    #a.histogram_of_positions()
+    a.histogram_of_positions()
     a.calc_corr()
-    #a.calculate_dilation_of_prey()
+    a.calculate_dilation_of_prey()
     plt.show()
