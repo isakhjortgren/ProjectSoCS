@@ -23,7 +23,7 @@ def calculate_variance_of_prey():
         mean_pos = np.mean(prey_pos, axis=0)
 
         pos_relative_to_center = prey_pos-mean_pos
-        var_i = np.var(np.linalg.norm(pos_relative_to_center, axis=1))
+        var_i = np.std(np.linalg.norm(pos_relative_to_center, axis=1))
         array_of_var[i] = var_i
 
     plt.plot(array_of_time, array_of_var)
