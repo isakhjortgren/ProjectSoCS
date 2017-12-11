@@ -18,9 +18,11 @@ def generate_movement_data_and_video(i_data_set):
     aq_par = pso_prey.aquarium_parameters
 
     aq_par["outfile"] = "MovementData%s.p" % i_data_set
-    aq_par["sim_time"] = 40
+    aq_par["sim_time"] = 1000
+    aq_par['nbr_of_prey'] = 80
+    aq_par['nbr_of_pred'] = 8
 
-    size = 2
+    size = 4
     aq_par["size_X"] = size
     aq_par["size_Y"] = size
 
@@ -28,8 +30,8 @@ def generate_movement_data_and_video(i_data_set):
     aq.pred_brain.update_brain(pso_pred.get_particle_position_with_best_val_fitness())
     aq.prey_brain.update_brain(pso_prey.get_particle_position_with_best_val_fitness())
 
-    # aq.run_simulation()
-    aq.run_simulation_video("video_%s.mp4" % i_data_set)
+    aq.run_simulation()
+    # aq.run_simulation_video("video_%s.mp4" % i_data_set)
 
 
 def generate_movement_data_and_video_for_all(list_of_data_sets):
