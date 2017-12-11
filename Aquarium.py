@@ -547,12 +547,15 @@ class aquarium(object):
         self.plot_prey.set_data(self.fish_xy[self.interval_prey,0], self.fish_xy[self.interval_prey,1])
         self.plot_pred.set_data(self.fish_xy[self.interval_pred,0], self.fish_xy[self.interval_pred,1])
 
+        vel_magnitudes = np.linalg.norm(self.fish_vel,axis=1)
         for i in range(self.fish_xy.shape[0]):
             x,y = self.fish_xy[i,:]
-            dx,dy = self.acc_fish[i,:]
+            dx,dy = (self.size_X/20) * self.fish_vel[i,:] / vel_magnitudes[i] 
             #dx,dy = self.brain_input[i,0:2]   #Uncomment to get show first vector
             
-            self.fish_acc_arrow[i].set_data([x,x+dx],[y,y+dy])
+        
+        for i in range(self.fish_xy.shape[0], len(self.fish_acc_arrow)):
+            self.fish_acc_arrow[i].set_data([],[])
 
         self.plot_text.set_text("Fish killed = "+str(self.eaten))
         self.video_writer.grab_frame()
@@ -585,7 +588,7 @@ if __name__ == '__main__':
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_parameters)
-    #a.set_videoutput('test.mp4',fps=25)
+    a.set_videoutput('test.mp4',fps=25)
     start_time = time.time()
     print(a.run_simulation())
 
