@@ -12,11 +12,13 @@ nbr_prey = fish_data['nbr_prey']
 nbr_pred = fish_data['nbr_pred']
 score = fish_data["score"]
 fish_eaten =  fish_data["fishes_eaten"]
+time_array = fish_data['time']
+figure_index = 1
+
 
 
 def calculate_dilation_of_prey():
     test_3dMat = pos_over_time[:,nbr_pred:, :]
-    array_of_time = np.linspace(0, 1, pos_over_time.shape[0])
     positions_adjusted = np.copy(test_3dMat)
     mean_pos = test_3dMat.mean(axis=1)
     for i in range(test_3dMat.shape[1]):
@@ -25,9 +27,10 @@ def calculate_dilation_of_prey():
     radial_from_center = np.linalg.norm(positions_adjusted, axis=2)
     radial_mean = radial_from_center.mean(axis=1)
     radial_var = np.var(radial_from_center, axis=1)
+
     plt.figure()
-    plt.plot(array_of_time, radial_mean)
-    plt.fill_between(array_of_time, radial_mean - radial_var, radial_mean + radial_var, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
+    plt.plot(time_array, radial_mean)
+    plt.fill_between(time_array, radial_mean - radial_var, radial_mean + radial_var, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
     plt.title('Radial dilation of prey position')
     plt.xlabel('Time')
     plt.ylabel('Dilation')
@@ -69,6 +72,7 @@ def calc_corr():
     plt.title("Pred Y Correlation")
 
 def histogram_of_positions():
+    plt.figure()
     test_3dMat = pos_over_time[:,nbr_pred: , :]
     all_x_pos = test_3dMat[:, :, 0]
     all_x_pos = all_x_pos.reshape(all_x_pos.size)
