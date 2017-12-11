@@ -37,11 +37,12 @@ class AnalyzeClass(object):
     
         radial_from_center = np.linalg.norm(positions_adjusted, axis=2)
         radial_mean = radial_from_center.mean(axis=1)
-        radial_var = np.std(radial_from_center, axis=1)
+        radial_max = np.max(radial_from_center, axis=1)
+        radial_min = np.min(radial_from_center, axis=1)
     
         plt.figure()
         plt.plot(self.time_array, radial_mean)
-        plt.fill_between(self.time_array, radial_mean - radial_var, radial_mean + radial_var, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
+        plt.fill_between(self.time_array, radial_min, radial_max, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
         plt.title('Radial dilation of prey position')
         plt.xlabel('Time')
         plt.ylabel('Dilation')
@@ -97,8 +98,8 @@ class AnalyzeClass(object):
         plt.savefig("Histogram_of_2d_pos.png")
 
 if __name__ == '__main__':
-    a = AnalyzeClass('respawn_data.p')
+    a = AnalyzeClass('MovementData1.p')
     #a.histogram_of_positions()
-    a.calc_corr()
-    #a.calculate_dilation_of_prey()
+    #a.calc_corr()
+    a.calculate_dilation_of_prey()
     plt.show()
