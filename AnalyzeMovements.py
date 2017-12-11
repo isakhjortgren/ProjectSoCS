@@ -33,8 +33,8 @@ def calculate_variance_of_prey():
     plt.ylabel('Dilation')
 
 def calculate_dilation_of_prey():
-    test_3dMat = np.random.rand(10000, 10, 2)
-    array_of_time = np.linspace(0, 1, 10000)
+    test_3dMat = pos_over_time[:,nbr_pred:, :]
+    array_of_time = np.linspace(0, 1, pos_over_time.shape[0])
     positions_adjusted = np.copy(test_3dMat)
     mean_pos = test_3dMat.mean(axis=1)
     for i in range(test_3dMat.shape[1]):
@@ -53,14 +53,12 @@ def calculate_dilation_of_prey():
     
 
 def calc_corr(x_pos, y_pos):
-    N = x_pos.shape[0]
-    T = x_pos.shape[1]
-    prey_correlation_x = np.corrcoef(x_pos[3:,T//2:])
-    prey_correlation_y = np.corrcoef(y_pos[3:,T//2:])
-    pred_correlation_x = np.corrcoef(x_pos[:3,T//2:])
-    pred_correlation_y = np.corrcoef(y_pos[:3,T//2:])
-
-
+    N = pos_over_time.shape[1]
+    T = x_pos.shape[0]
+    prey_correlation_x = np.corrcoef(pos_over_time[T//2:, nbr_pred:, 0])
+    prey_correlation_y = np.corrcoef(pos_over_time[T//2:, nbr_pred:, 1])
+    pred_correlation_x = np.corrcoef(pos_over_time[T//2:, :nbr_pred, 0])
+    pred_correlation_y = np.corrcoef(pos_over_time[T//2:, :nbr_pred, 1])
 
     #Set diagonal to NaN
     i_es = list(range(N-3))
@@ -94,12 +92,13 @@ def histogram_of_positions():
     all_x_pos = all_x_pos.reshape(all_x_pos.size)
     all_y_pos = test_3dMat[:, :, 1]
     all_y_pos = all_y_pos.reshape(all_y_pos.size)
-    print('hej')
     plt.hist2d(all_x_pos, all_y_pos, bins=160)
     plt.title('Position distribution')
     plt.colorbar()
 
 
 if __name__ == '__main__':
-    histogram_of_positions()
+    #histogram_of_positions()
+
+    calculate_dilation_of_prey()
     plt.show()

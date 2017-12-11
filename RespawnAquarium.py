@@ -129,7 +129,8 @@ class respawnAquarium(aquarium):
 				fish_data = {'vel_over_time': self.log_vel,
 		                     'pos_over_time': self.log_pos,
 		                     'nbr_pred': self.nbr_of_pred,
-		                     'nbr_prey': self.nbr_of_prey, 
+		                     'nbr_prey': self.nbr_of_prey,
+							 'time': self.log_t,
 		                     'fishes_eaten': np.array(self.log_eaten_times),
 		                     'score': (self.prey_score, self.pred_score) }
 				pickle.dump(fish_data, f)
@@ -151,8 +152,9 @@ if __name__ == '__main__':
 	aq_par["outfile"] = "respawn_data.p"
 	aq_par["sim_time"] = 150
 
-	aq_par["size_X"] = 10
-	aq_par["size_X"] = 10
+	size = 3
+	aq_par["size_X"] = size
+	aq_par["size_Y"] = size
 
 
 	aq = respawnAquarium(**aq_par)
