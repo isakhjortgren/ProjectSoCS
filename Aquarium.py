@@ -529,7 +529,7 @@ class aquarium(object):
                     self.timestep(dt, time)
                     self.pos_over_time.append(np.copy(self.fish_xy))
                     self.vel_over_time.append(np.copy(self.fish_vel))
-                    self.__grab_Frame_()
+                    self.grab_Frame_()
                     time += dt
                     if time>next_print:
                         next_print += 1
@@ -543,7 +543,7 @@ class aquarium(object):
         return (self.prey_score, self.pred_score) #Prey score is negative pred score
 
 
-    def __grab_Frame_(self):
+    def grab_Frame_(self):
         self.plot_prey.set_data(self.fish_xy[self.interval_prey,0], self.fish_xy[self.interval_prey,1])
         self.plot_pred.set_data(self.fish_xy[self.interval_pred,0], self.fish_xy[self.interval_pred,1])
 

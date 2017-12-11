@@ -108,8 +108,8 @@ class respawnAquarium(aquarium):
 		try:
 			with self.video_writer.saving(self.fig, self.video_filename, self.video_dpi):
 				while self.i < self.iterations:
-					self.timestep(dt, self.time)
-					self.__grab_Frame_()
+					self.timestep(self.dt, self.time)
+					self.grab_Frame_()
 
 					#Log stuff
 
@@ -126,8 +126,8 @@ class respawnAquarium(aquarium):
 			print("KeyboardInterrupt!")             
 		finally:
 			with open(self.outfile, 'wb') as f:
-				fish_data = {'vel_over_time': log_vel,
-		                     'pos_over_time': log_pos,
+				fish_data = {'vel_over_time': self.log_vel,
+		                     'pos_over_time': self.log_pos,
 		                     'nbr_pred': self.nbr_of_pred,
 		                     'nbr_prey': self.nbr_of_prey, 
 		                     'fishes_eaten': np.array(self.log_eaten_times),
@@ -149,10 +149,10 @@ if __name__ == '__main__':
 	aq_par = pso_prey.aquarium_parameters
 
 	aq_par["outfile"] = "respawn_data.p"
-	aq_par["sim_time"] = 300
+	aq_par["sim_time"] = 150
 
-	aq_par["size_X"] = 5
-	aq_par["size_X"] = 5
+	aq_par["size_X"] = 10
+	aq_par["size_X"] = 10
 
 
 	aq = respawnAquarium(**aq_par)
@@ -162,5 +162,5 @@ if __name__ == '__main__':
 
 
 
-	aq.run_simulation()
-	#aq.run_simulation_video("video_filename.mp4")
+	#aq.run_simulation()
+	aq.run_simulation_video("video_filename.mp4")
