@@ -18,7 +18,7 @@ def generate_movement_data_and_video(i_data_set):
     aq_par = pso_prey.aquarium_parameters
 
     aq_par["outfile"] = "MovementData%s.p" % i_data_set
-    aq_par["sim_time"] = 15
+    aq_par["sim_time"] = 40
 
     size = 2
     aq_par["size_X"] = size
@@ -44,10 +44,12 @@ def generate_graphs(list_of_data_sets):
         movement_data = 'MovementData%s.p' % i_data_set
         a = AnalyzeClass(movement_data)
         a.histogram_of_positions()
+        a.calculate_dilation_of_prey()
+        a.calc_corr()
     plt.show()
 
 
 if __name__ == '__main__':
-    list_of_data_sets = [1, 2, 3, 10]#1, 2, 3, 7, 8, 9, 10, 11]
-    #generate_movement_data_and_video_for_all(list_of_data_sets)
-    generate_graphs(list_of_data_sets)
+    list_of_data_sets = [1, 2, 3, 7, 8, 9, 10, 11]
+    generate_movement_data_and_video_for_all(list_of_data_sets)
+    #generate_graphs(list_of_data_sets)
