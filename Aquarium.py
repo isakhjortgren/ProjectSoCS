@@ -443,11 +443,6 @@ class aquarium(object):
                                         * self.fish_vel[indices,:] \
                                         / vel_magnitudes[indices,np.newaxis]         
 
-        #Simply error crashes with NaN-values
-        if math.isnan(self.fish_xy[0,0]):
-            raise RuntimeError("NaN value in coordinate")
-
-
     def set_videoutput(self, filename, fps=50, dpi=100):
         if self.video_enabled :
             raise BaseException("confusing to call set_videoutput() multiple times")
