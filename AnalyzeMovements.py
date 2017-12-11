@@ -3,15 +3,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import itertools
 
-with open('FishDataFromPreviousFilm.p', 'rb') as f:
+with open('respawn_data.p', 'rb') as f:
     fish_data = pickle.load(f)
-
 
 pos_over_time = fish_data['pos_over_time']
 vel_over_time = fish_data['vel_over_time']
 nbr_prey = fish_data['nbr_prey']
 nbr_pred = fish_data['nbr_pred']
-fishes_removed =  list(reversed(fish_data["fishes_removed"]))
+score = fish_data["score"]
+fish_eaten =  fish_data["fishes_eaten"]
 
 
 def calculate_variance_of_prey():
@@ -59,7 +59,7 @@ def calc_corr(x_pos, y_pos):
     prey_correlation_y = np.corrcoef(y_pos[3:,T//2:])
     pred_correlation_x = np.corrcoef(x_pos[:3,T//2:])
     pred_correlation_y = np.corrcoef(y_pos[:3,T//2:])
-    
+
 
 
     #Set diagonal to NaN
@@ -70,7 +70,7 @@ def calc_corr(x_pos, y_pos):
     pred_correlation_x[i_es,i_es] = 100
     pred_correlation_y[i_es,i_es] = 100
 
-    
+
     plt.subplot(221)
     plt.hist(prey_correlation_x.reshape((N-3)**2),30, range=(-1,1))
     plt.title("Prey X Correlation")
@@ -87,36 +87,19 @@ def calc_corr(x_pos, y_pos):
 
     plt.show()
 
-def hotfix(t_pos):
-    T= len(t_pos)
-    fishes = t_pos[0].shape[0]
-
-    x_pos = np.zeros( (fishes, T) )
-    y_pos = np.zeros( (fishes, T) )
-
-    for i, fish_xy in enumerate( t_pos):
-        if fish_xy.shape[0] != x_pos.shape[0]:
-            ### HOTFIX TIME
-            indicies = fishes_removed.pop()
-            x_pos = np.delete(x_pos, indicies, axis = 0)
-            y_pos = np.delete(y_pos, indicies, axis = 0)
-        x_pos[:,i] = fish_xy[:,0]
-        y_pos[:,i] = fish_xy[:,1]  
-    return x_pos,y_pos
-
 
 def histogram_of_positions():
-    test_3dMat = np.random.rand(10000, 10, 2)
+    test_3dMat = pos_over_time[:,nbr_pred: , :]
     all_x_pos = test_3dMat[:, :, 0]
     all_x_pos = all_x_pos.reshape(all_x_pos.size)
     all_y_pos = test_3dMat[:, :, 1]
     all_y_pos = all_y_pos.reshape(all_y_pos.size)
     print('hej')
-    plt.hist2d(all_x_pos, all_y_pos, bins=40)
+    plt.hist2d(all_x_pos, all_y_pos, bins=160)
     plt.title('Position distribution')
     plt.colorbar()
 
 
 if __name__ == '__main__':
-    calculate_dilation_of_prey()
+    histogram_of_positions()
     plt.show()
