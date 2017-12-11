@@ -14,24 +14,6 @@ score = fish_data["score"]
 fish_eaten =  fish_data["fishes_eaten"]
 
 
-def calculate_variance_of_prey():
-    length = len(pos_over_time)
-    array_of_var = np.zeros(length)
-    array_of_time = np.linspace(0, length/50, length)
-    for i in range(length):
-        prey_pos = pos_over_time[i][nbr_pred:, :]
-        mean_pos = np.mean(prey_pos, axis=0)
-
-        pos_relative_to_center = prey_pos-mean_pos
-        var_i = np.var(np.linalg.norm(pos_relative_to_center, axis=1))
-        array_of_var[i] = var_i
-
-    plt.plot(array_of_time, array_of_var)
-    plt.axis([0, np.max(array_of_time), 0, 0.7])
-    plt.title('Radial dilation of prey position')
-    plt.xlabel('Time')
-    plt.ylabel('Dilation')
-
 def calculate_dilation_of_prey():
     test_3dMat = pos_over_time[:,nbr_pred:, :]
     array_of_time = np.linspace(0, 1, pos_over_time.shape[0])
@@ -43,7 +25,7 @@ def calculate_dilation_of_prey():
     radial_from_center = np.linalg.norm(positions_adjusted, axis=2)
     radial_mean = radial_from_center.mean(axis=1)
     radial_var = np.var(radial_from_center, axis=1)
-    plt.figure(1)
+    plt.figure()
     plt.plot(array_of_time, radial_mean)
     plt.fill_between(array_of_time, radial_mean - radial_var, radial_mean + radial_var, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
     plt.title('Radial dilation of prey position')
@@ -52,39 +34,39 @@ def calculate_dilation_of_prey():
     print('jao')
     
 
-def calc_corr(x_pos, y_pos):
+def calc_corr():
     N = pos_over_time.shape[1]
-    T = x_pos.shape[0]
-    prey_correlation_x = np.corrcoef(pos_over_time[T//2:, nbr_pred:, 0])
-    prey_correlation_y = np.corrcoef(pos_over_time[T//2:, nbr_pred:, 1])
-    pred_correlation_x = np.corrcoef(pos_over_time[T//2:, :nbr_pred, 0])
-    pred_correlation_y = np.corrcoef(pos_over_time[T//2:, :nbr_pred, 1])
+    T = pos_over_time.shape[0]
+    prey_correlation_x = np.corrcoef(pos_over_time[:, nbr_pred:, 0],rowvar=False)
+    prey_correlation_y = np.corrcoef(pos_over_time[:, nbr_pred:, 1],rowvar=False)
+    pred_correlation_x = np.corrcoef(pos_over_time[:, :nbr_pred, 0],rowvar=False)
+    pred_correlation_y = np.corrcoef(pos_over_time[:, :nbr_pred, 1],rowvar=False)
 
     #Set diagonal to NaN
-    i_es = list(range(N-3))
+    i_es = list(range(nbr_prey))
     prey_correlation_x[i_es,i_es] = 100
     prey_correlation_y[i_es,i_es] = 100
-    i_es = list(range(3))
+    i_es = list(range(nbr_pred))
     pred_correlation_x[i_es,i_es] = 100
     pred_correlation_y[i_es,i_es] = 100
 
 
+    resolution = 30
+
+    plt.figure()
     plt.subplot(221)
-    plt.hist(prey_correlation_x.reshape((N-3)**2),30, range=(-1,1))
+    plt.hist(prey_correlation_x.reshape(prey_correlation_x.size),resolution, range=(-1,1))
     plt.title("Prey X Correlation")
     plt.subplot(222)
-    plt.hist(prey_correlation_y.reshape((N-3)**2),30, range=(-1,1))
+    plt.hist(prey_correlation_y.reshape(prey_correlation_y.size),resolution, range=(-1,1))
     plt.title("Prey Y Correlation")
 
     plt.subplot(223)
-    plt.hist(pred_correlation_x.reshape(9),30, range=(-1,1))
+    plt.hist(pred_correlation_x.reshape(pred_correlation_x.size),resolution, range=(-1,1))
     plt.title("Pred X Correlation")
     plt.subplot(224)
-    plt.hist(pred_correlation_y.reshape(9),30, range=(-1,1))
+    plt.hist(pred_correlation_y.reshape(pred_correlation_y.size),resolution, range=(-1,1))
     plt.title("Pred Y Correlation")
-
-    plt.show()
-
 
 def histogram_of_positions():
     test_3dMat = pos_over_time[:,nbr_pred: , :]
@@ -92,13 +74,14 @@ def histogram_of_positions():
     all_x_pos = all_x_pos.reshape(all_x_pos.size)
     all_y_pos = test_3dMat[:, :, 1]
     all_y_pos = all_y_pos.reshape(all_y_pos.size)
+    plt.figure()
     plt.hist2d(all_x_pos, all_y_pos, bins=160)
     plt.title('Position distribution')
     plt.colorbar()
 
 
 if __name__ == '__main__':
-    #histogram_of_positions()
-
+    histogram_of_positions()
+    calc_corr()
     calculate_dilation_of_prey()
     plt.show()
