@@ -15,6 +15,12 @@ class AnalyzeClass(object):
         self.score = fish_data["score"]
         self.fish_eaten =  fish_data["fishes_eaten"]
         self.time_array = fish_data['time']
+
+        try:
+            self.size = fish_data["size"]
+        except:
+            self.size = round(np.max(self.pos_over_time[:,:,:]))
+
     
     
     
@@ -78,15 +84,17 @@ class AnalyzeClass(object):
         all_x_pos = all_x_pos.reshape(all_x_pos.size)
         all_y_pos = test_3dMat[:, :, 1]
         all_y_pos = all_y_pos.reshape(all_y_pos.size)
-        plt.figure()
-        plt.hist2d(all_x_pos, all_y_pos, bins=160)
-        plt.title('Position distribution')
-        plt.colorbar()
+        fig = plt.figure()
+        plt.hist2d(all_x_pos, all_y_pos, bins=160, range=[(0, self.size), (0,self.size)])
 
+        plt.axis('off')
+        plt.title('Position distribution')
+        #plt.colorbar()
+        plt.savefig("Histogram_of_2d_pos.png")
 
 if __name__ == '__main__':
     a = AnalyzeClass('respawn_data.p')
-    a.histogram_of_positions()
+    #a.histogram_of_positions()
     a.calc_corr()
-    a.calculate_dilation_of_prey()
+    #a.calculate_dilation_of_prey()
     plt.show()
