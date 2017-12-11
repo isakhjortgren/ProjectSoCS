@@ -130,7 +130,7 @@ class respawnAquarium(aquarium):
 		                     'pos_over_time': self.log_pos,
 		                     'nbr_pred': self.nbr_of_pred,
 		                     'nbr_prey': self.nbr_of_prey,
-		                     'size': self.aq.size_X
+		                     'size': self.size_X,
 							 'time': self.log_t,
 		                     'fishes_eaten': np.array(self.log_eaten_times),
 		                     'score': (self.prey_score, self.pred_score) }
