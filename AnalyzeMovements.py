@@ -1,5 +1,6 @@
 import pickle
 import numpy as np
+from numpy import matlib
 import matplotlib.pyplot as plt
 import itertools
 
@@ -84,8 +85,56 @@ def histogram_of_positions():
     plt.colorbar()
 
 
-if __name__ == '__main__':
-    histogram_of_positions()
-    calc_corr()
-    calculate_dilation_of_prey()
+pos_over_time_prey = pos_over_time[:,nbr_pred:,:]
+pos_over_time_pred = pos_over_time[:,0:nbr_pred,:]
+vel_over_time_prey = vel_over_time[:, nbr_pred:, :]
+vel_over_time_pred = vel_over_time[:, 0:nbr_pred, :]
+
+mean_pos_over_time_prey = np.mean(pos_over_time_prey, axis=1)
+mean_pos_over_time_pred = np.mean(pos_over_time_pred, axis=1)
+mean_vel_over_time_prey = np.mean(vel_over_time_prey, axis=1)
+mean_vel_over_time_pred = np.mean(vel_over_time_pred, axis=1)
+
+
+def calculate_rotaion_and_polarization():
+    number_of_timesteps = pos_over_time_prey.shape[0]
+    number_of_prey = pos_over_time_prey.shape[1]
+
+    normalised_vel_over_time_prey = vel_over_time_prey / np.linalg.norm(vel_over_time_prey, axis=2)[:, :, np.newaxis]
+    normalised_mean_vel_over_time_prey = np.mean(normalised_vel_over_time_prey, axis=1)
+
+    polarisation_over_time_prey = np.linalg.norm(normalised_mean_vel_over_time_prey, axis=1)
+
+    pos_relative_mean_over_time_prey = pos_over_time_prey - mean_pos_over_time_prey[:, np.newaxis, :]
+    pos_relative_mean_over_time_prey = pos_relative_mean_over_time_prey/np.linalg.norm(pos_relative_mean_over_time_prey,axis=2)[:,:,np.newaxis]
+
+    z = np.zeros(shape=(number_of_timesteps, number_of_prey))
+    for t in range(number_of_timesteps):
+        for prey in range(number_of_prey):
+            x1 = normalised_vel_over_time_prey[t,prey,0]
+            x2 = pos_relative_mean_over_time_prey[t,prey,0]
+            y1 = normalised_vel_over_time_prey[t,prey,1]
+            y2 = pos_relative_mean_over_time_prey[t, prey, 1]
+            z[t,prey] = x1*y2-x2*y1
+    rotation_over_time_prey = np.mean(z,1)
+
+    plt.figure()
+    plt.subplot(121)
+    plt.plot(time_array, polarisation_over_time_prey)
+    plt.title("Prey Polarisation")
+
+    plt.subplot(122)
+    plt.plot(time_array, rotation_over_time_prey)
+    plt.title("Prey Rotation")
     plt.show()
+
+
+
+
+
+if __name__ == '__main__':
+    calculate_rotaion_and_polarization()
+    #histogram_of_positions()
+    #calc_corr()
+    #calculate_dilation_of_prey()
+    #plt.show()
