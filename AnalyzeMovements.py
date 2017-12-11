@@ -28,9 +28,28 @@ def calculate_variance_of_prey():
 
     plt.plot(array_of_time, array_of_var)
     plt.axis([0, np.max(array_of_time), 0, 0.7])
-    plt.title('Radial variance of prey position')
+    plt.title('Radial dilation of prey position')
     plt.xlabel('Time')
-    plt.ylabel('Variance')
+    plt.ylabel('Dilation')
+
+def calculate_dilation_of_prey():
+    test_3dMat = np.random.rand(10000, 10, 2)
+    array_of_time = np.linspace(0, 1, 10000)
+    positions_adjusted = np.copy(test_3dMat)
+    mean_pos = test_3dMat.mean(axis=1)
+    for i in range(test_3dMat.shape[1]):
+        positions_adjusted[:, i, :] -= mean_pos
+
+    radial_from_center = np.linalg.norm(positions_adjusted, axis=2)
+    radial_mean = radial_from_center.mean(axis=1)
+    radial_var = np.var(radial_from_center, axis=1)
+    plt.figure(1)
+    plt.plot(array_of_time, radial_mean)
+    plt.fill_between(array_of_time, radial_mean - radial_var, radial_mean + radial_var, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
+    plt.title('Radial dilation of prey position')
+    plt.xlabel('Time')
+    plt.ylabel('Dilation')
+    print('jao')
     
 
 def calc_corr(x_pos, y_pos):
@@ -85,11 +104,19 @@ def hotfix(t_pos):
         y_pos[:,i] = fish_xy[:,1]  
     return x_pos,y_pos
 
+
+def histogram_of_positions():
+    test_3dMat = np.random.rand(10000, 10, 2)
+    all_x_pos = test_3dMat[:, :, 0]
+    all_x_pos = all_x_pos.reshape(all_x_pos.size)
+    all_y_pos = test_3dMat[:, :, 1]
+    all_y_pos = all_y_pos.reshape(all_y_pos.size)
+    print('hej')
+    plt.hist2d(all_x_pos, all_y_pos, bins=40)
+    plt.title('Position distribution')
+    plt.colorbar()
+
+
 if __name__ == '__main__':
-    #calculate_variance_of_prey()
-    
-    x_pos, y_pos = hotfix(pos_over_time)
-    
-    calc_corr(x_pos,y_pos)
-    
+    calculate_dilation_of_prey()
     plt.show()
