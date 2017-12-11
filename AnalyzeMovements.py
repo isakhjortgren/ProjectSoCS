@@ -13,13 +13,17 @@ class AnalyzeClass(object):
         self.nbr_prey = fish_data['nbr_prey']
         self.nbr_pred = fish_data['nbr_pred']
         self.score = fish_data["score"]
-        self.fish_eaten =  fish_data["fishes_eaten"]
+        self.fish_eaten = fish_data["fishes_eaten"]
         self.time_array = fish_data['time']
+
 
         try:
             self.size = fish_data["size"]
         except:
             self.size = round(np.max(self.pos_over_time[:,:,:]))
+
+
+        self.figure_name_beginning = data_file.replace('.p', '')
 
     
     
