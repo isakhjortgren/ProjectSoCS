@@ -554,7 +554,7 @@ class aquarium(object):
             #dx,dy = self.brain_input[i,0:2]   #Uncomment to get show first vector
             
         
-        for i in range(self.fish_xy.shape[0], len(self.fish_acc_arrow))
+        for i in range(self.fish_xy.shape[0], len(self.fish_acc_arrow)):
             self.fish_acc_arrow[i].set_data([],[])
 
         self.plot_text.set_text("Fish killed = "+str(self.eaten))
@@ -588,7 +588,7 @@ if __name__ == '__main__':
 
     np.set_printoptions(precision=3)
     a = aquarium(**aquarium_parameters)
-    #a.set_videoutput('test.mp4',fps=25)
+    a.set_videoutput('test.mp4',fps=25)
     start_time = time.time()
     print(a.run_simulation())
 

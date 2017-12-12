@@ -26,16 +26,46 @@ class AnalyzeClass(object):
 
         self.figure_name_beginning = data_file.replace('.p', '')
 
-    
-    
-    
+
+
+    def calculate_sub_graphs(self):
+        fish_pos_t = self.pos_over_time[:, self.nbr_pred:, :]
+        threshold = 0.5
+
+        def find_clusters(L):
+            not_connected_to_0 = L[:,0] == 0
+            send_to_next = L[not_connected_to_0, :][:, not_connected_to_0]
+            if send_to_next.size == 0:
+                return 1
+            return find_clusters(send_to_next) + 1
+
+        nbr_cluster_size = np.zeros(fish_pos_t.shape[0])
+        for i, fish_xy in enumerate(fish_pos_t):
+            x_diff = np.column_stack([fish_xy[:, 0]] * self.nbr_prey) - np.row_stack([fish_xy[:, 0]] * self.nbr_prey)
+            y_diff = np.column_stack([fish_xy[:, 1]] * self.nbr_prey) - np.row_stack([fish_xy[:, 1]] * self.nbr_prey)
+            distances = np.sqrt(x_diff ** 2 + y_diff ** 2)
+            A = distances < threshold
+            A_n = np.linalg.matrix_power(A, A.shape[0])
+
+            Lij = (A_n > 0.5).astype(int)
+            nbr_cluster_size[i] = find_clusters(Lij)
+
+        plt.plot(self.time_array, nbr_cluster_size)
+        plt.show()
+
+
+
+
+
+
+
     def calculate_dilation_of_prey(self):
         test_3dMat = self.pos_over_time[:,self.nbr_pred:, :]
         positions_adjusted = np.copy(test_3dMat)
         mean_pos = test_3dMat.mean(axis=1)
         for i in range(test_3dMat.shape[1]):
             positions_adjusted[:, i, :] -= mean_pos
-    
+
         radial_from_center = np.linalg.norm(positions_adjusted, axis=2)
         radial_mean = radial_from_center.mean(axis=1)
         radial_max = np.max(radial_from_center, axis=1)
@@ -119,8 +149,6 @@ class AnalyzeClass(object):
 
 
 
-
-
     def calculate_rotation_and_polarization(self):
         pos_over_time_prey = self.pos_over_time[:, self.nbr_pred:, :]
         pos_over_time_pred = self.pos_over_time[:, 0:self.nbr_pred, :]
@@ -172,4 +200,5 @@ if __name__ == '__main__':
     a.calc_corr()
     a.calculate_dilation_of_prey()
     plt.show()
+
 

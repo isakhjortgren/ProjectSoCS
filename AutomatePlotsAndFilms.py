@@ -18,9 +18,11 @@ def generate_movement_data_and_video(i_data_set):
     aq_par = pso_prey.aquarium_parameters
 
     aq_par["outfile"] = "MovementData%s.p" % i_data_set
-    aq_par["sim_time"] = 15
+    aq_par["sim_time"] = 1000
+    aq_par['nbr_of_prey'] = 80
+    aq_par['nbr_of_pred'] = 8
 
-    size = 2
+    size = 4
     aq_par["size_X"] = size
     aq_par["size_Y"] = size
 
@@ -28,8 +30,8 @@ def generate_movement_data_and_video(i_data_set):
     aq.pred_brain.update_brain(pso_pred.get_particle_position_with_best_val_fitness())
     aq.prey_brain.update_brain(pso_prey.get_particle_position_with_best_val_fitness())
 
-    # aq.run_simulation()
-    aq.run_simulation_video("video_%s.mp4" % i_data_set)
+    aq.run_simulation()
+    # aq.run_simulation_video("video_%s.mp4" % i_data_set)
 
 
 def generate_movement_data_and_video_for_all(list_of_data_sets):
@@ -44,10 +46,12 @@ def generate_graphs(list_of_data_sets):
         movement_data = 'MovementData%s.p' % i_data_set
         a = AnalyzeClass(movement_data)
         a.histogram_of_positions()
+        a.calculate_dilation_of_prey()
+        a.calc_corr()
     plt.show()
 
 
 if __name__ == '__main__':
-    list_of_data_sets = [1, 2, 3, 10]#1, 2, 3, 7, 8, 9, 10, 11]
-    #generate_movement_data_and_video_for_all(list_of_data_sets)
-    generate_graphs(list_of_data_sets)
+    list_of_data_sets = [1, 2, 3, 7, 8, 9, 10, 11]
+    generate_movement_data_and_video_for_all(list_of_data_sets)
+    #generate_graphs(list_of_data_sets)
