@@ -30,7 +30,7 @@ class AnalyzeClass(object):
 
     def calculate_sub_graphs(self):
         fish_pos_t = self.pos_over_time[:, self.nbr_pred:, :]
-        threshold = 0.5
+        threshold = 0.3
 
         def find_clusters(L):
             not_connected_to_0 = L[:,0] == 0
@@ -49,9 +49,10 @@ class AnalyzeClass(object):
 
             Lij = (A_n > 0.5).astype(int)
             nbr_cluster_size[i] = find_clusters(Lij)
-
+        plt.figure()
         plt.plot(self.time_array, nbr_cluster_size)
-        plt.show()
+        plt.ylim(0, self.nbr_prey)
+        plt.savefig(self.figure_name_beginning + 'subGraph.png')
 
 
 
@@ -192,11 +193,11 @@ class AnalyzeClass(object):
 
 
 if __name__ == '__main__':
-    a = AnalyzeClass('respawn_data.p')
-    a.calculate_rotation_and_polarization()
-    a.histogram_of_positions()
-    a.calc_corr()
-    a.calculate_dilation_of_prey()
-    plt.show()
+    a = AnalyzeClass('MovementData2.p')
+    #a.calculate_rotation_and_polarization()
+    #a.histogram_of_positions()
+    #a.calc_corr()
+    a.calculate_sub_graphs()
+
 
 
