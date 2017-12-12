@@ -17,7 +17,7 @@ class AnalyzeClass(object):
         self.fish_eaten = fish_data["fishes_eaten"]
         try:
             self.time_array = fish_data['time']
-        except:
+        except: 
             self.time_array = np.linspace(0, 1000, self.pos_over_time.shape[0])
 
         try:
