@@ -48,10 +48,11 @@ def generate_graphs(list_of_data_sets):
         a.histogram_of_positions()
         a.calculate_dilation_of_prey()
         a.calc_corr()
+        a.calculate_rotation_and_polarization()
     plt.show()
 
 
 if __name__ == '__main__':
     list_of_data_sets = [1, 2, 3, 7, 8, 9, 10, 11]
-    generate_movement_data_and_video_for_all(list_of_data_sets)
-    #generate_graphs(list_of_data_sets)
+    #generate_movement_data_and_video_for_all(list_of_data_sets)
+    generate_graphs(list_of_data_sets)
