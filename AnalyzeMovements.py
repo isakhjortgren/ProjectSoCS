@@ -15,8 +15,10 @@ class AnalyzeClass(object):
         self.nbr_pred = fish_data['nbr_pred']
         self.score = fish_data["score"]
         self.fish_eaten = fish_data["fishes_eaten"]
-        self.time_array = fish_data['time']
-
+        try:
+            self.time_array = fish_data['time']
+        except:
+            self.time_array = np.linspace(0, 1000, self.pos_over_time.shape[0])
 
         try:
             self.size = fish_data["size"]
@@ -25,8 +27,6 @@ class AnalyzeClass(object):
 
 
         self.figure_name_beginning = data_file.replace('.p', '')
-
-
 
     def calculate_sub_graphs(self):
         fish_pos_t = self.pos_over_time[:, self.nbr_pred:, :]
@@ -53,12 +53,7 @@ class AnalyzeClass(object):
         plt.plot(self.time_array, nbr_cluster_size)
         plt.ylim(0, self.nbr_prey)
         plt.savefig(self.figure_name_beginning + 'subGraph.png')
-
-
-
-
-
-
+        plt.close()
 
     def calculate_dilation_of_prey(self):
         test_3dMat = self.pos_over_time[:,self.nbr_pred:, :]
@@ -81,7 +76,8 @@ class AnalyzeClass(object):
         print('jao')
         plt.tight_layout()
         plt.savefig(self.figure_name_beginning + "_calclte_Dajläjtion.png")
-    
+        plt.close()
+
     def calc_corr(self):
         N = self.pos_over_time.shape[1]
         T = self.pos_over_time.shape[0]
@@ -92,9 +88,6 @@ class AnalyzeClass(object):
         pred_correlation_x = np.corrcoef(self.pos_over_time[:, :self.nbr_pred, 0],rowvar=False)
         pred_correlation_y = np.corrcoef(self.pos_over_time[:, :self.nbr_pred, 1],rowvar=False)
         """
-
-
-        #Set diagonal to NaN
         i_es = list(range(self.nbr_prey))
         prey_correlation_x[i_es,i_es] = 100
         prey_correlation_y[i_es,i_es] = 100
@@ -106,7 +99,6 @@ class AnalyzeClass(object):
         """
     
         resolution = 30
-    
         plt.figure(num=None, figsize=(4, 7), dpi=180, facecolor='w', edgecolor='k')
         
         plt.subplot(211)
@@ -131,7 +123,7 @@ class AnalyzeClass(object):
         plt.tight_layout()
         
         plt.savefig(self.figure_name_beginning + "_posCorr.png")
-
+        plt.close()
     
     def histogram_of_positions(self):
         test_3dMat = self.pos_over_time[:,self.nbr_pred: , :]
@@ -147,7 +139,7 @@ class AnalyzeClass(object):
         #plt.colorbar()
         plt.tight_layout()
         plt.savefig(self.figure_name_beginning + "_posHisto.png")
-
+        plt.close()
 
 
     def calculate_rotation_and_polarization(self):
@@ -192,7 +184,7 @@ class AnalyzeClass(object):
         plt.title("Prey Rotation")
 
         plt.savefig(self.figure_name_beginning + "_pol_rot.png")
-
+        plt.close()
 
 if __name__ == '__main__':
     a = AnalyzeClass('MovementData2.p')
