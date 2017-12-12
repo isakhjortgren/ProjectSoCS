@@ -40,7 +40,7 @@ class AnalyzeClass(object):
         radial_mean = radial_from_center.mean(axis=1)
         radial_max = np.max(radial_from_center, axis=1)
         radial_min = np.min(radial_from_center, axis=1)
-    
+        
         plt.figure(dpi=180)
         plt.plot(self.time_array, radial_mean)
         plt.fill_between(self.time_array, radial_min, radial_max, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
@@ -161,6 +161,8 @@ class AnalyzeClass(object):
         plt.subplot(122)
         plt.plot(self.time_array, rotation_over_time_prey)
         plt.title("Prey Rotation")
+
+        plt.savefig(self.figure_name_beginning + "_pol_rot.png")
 
 
 if __name__ == '__main__':
