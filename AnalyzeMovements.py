@@ -15,8 +15,11 @@ class AnalyzeClass(object):
         self.nbr_pred = fish_data['nbr_pred']
         self.score = fish_data["score"]
         self.fish_eaten = fish_data["fishes_eaten"]
-        self.time_array = fish_data['time']
-
+       
+        try:
+            self.time_array = fish_data['time']
+        except: 
+            self.time_array = np.linspace(0, 1000, self.pos_over_time.shape[0])
 
         try:
             self.size = fish_data["size"]
