@@ -3,6 +3,15 @@ import numpy as np
 from numpy import matlib
 import matplotlib.pyplot as plt
 import itertools
+from matplotlib.gridspec import GridSpec
+
+
+try:
+    with open("cluster_sizes.p","rb") as f:
+        cluster_size_dict = pickle.load(f)
+
+except:
+    cluster_size_dict = {}
 
 class AnalyzeClass(object):
     def __init__(self, data_file):
@@ -32,30 +41,37 @@ class AnalyzeClass(object):
         fish_pos_t = self.pos_over_time[:, self.nbr_pred:, :]
         threshold = 0.3
 
-        def find_clusters(L):
-            not_connected_to_0 = L[:,0] == 0
-            send_to_next = L[not_connected_to_0, :][:, not_connected_to_0]
-            if send_to_next.size == 0:
-                return 1
-            return find_clusters(send_to_next) + 1
 
-        nbr_cluster_size = np.zeros(fish_pos_t.shape[0])
-        for i, fish_xy in enumerate(fish_pos_t):
-            x_diff = np.column_stack([fish_xy[:, 0]] * self.nbr_prey) - np.row_stack([fish_xy[:, 0]] * self.nbr_prey)
-            y_diff = np.column_stack([fish_xy[:, 1]] * self.nbr_prey) - np.row_stack([fish_xy[:, 1]] * self.nbr_prey)
-            distances = np.sqrt(x_diff ** 2 + y_diff ** 2)
-            A = distances < threshold
-            A_n = np.linalg.matrix_power(A, A.shape[0])
+        if self.figure_name_beginning in cluster_size_dict: 
+            largest_cluster_size = cluster_size_dict[self.figure_name_beginning]
+        else:
+            largest_cluster_size = np.zeros(fish_pos_t.shape[0])
+            for i, fish_xy in enumerate(fish_pos_t):
+                x_diff = np.column_stack([fish_xy[:, 0]] * self.nbr_prey) - np.row_stack([fish_xy[:, 0]] * self.nbr_prey)
+                y_diff = np.column_stack([fish_xy[:, 1]] * self.nbr_prey) - np.row_stack([fish_xy[:, 1]] * self.nbr_prey)
+                distances = np.sqrt(x_diff ** 2 + y_diff ** 2)
+                A = distances < threshold
+                A_n = np.linalg.matrix_power(A, A.shape[0])
 
-            Lij = (A_n > 0.5).astype(int)
-            nbr_cluster_size[i] = find_clusters(Lij)
-        plt.figure()
-        plt.plot(self.time_array, nbr_cluster_size)
-        plt.ylim(0, self.nbr_prey)
-        plt.savefig(self.figure_name_beginning + 'subGraph.png')
-        plt.close()
+                Lij = (A_n > 0.5).astype(int)
+                largest_cluster_size[i] = np.max(Lij.sum(axis=0))
 
-    def calculate_dilation_of_prey(self):
+        cluster_size_dict[self.figure_name_beginning] = np.copy(largest_cluster_size)
+        bins = list(range(0,self.nbr_prey+1))
+        
+        #plt.hist(largest_cluster_size, resolution)
+        ret = plt.hist(largest_cluster_size,bins, \
+                weights=100*np.ones(largest_cluster_size.size)/largest_cluster_size.size)
+
+        if np.max(ret[0])> 15:
+            plt.ylim([0, 100])
+        elif np.max(ret[0])> 5:
+            plt.ylim([0, 15])
+        else:
+            plt.ylim([0, 5])
+
+
+    def calculate_dilation_of_prey(self, ylim):
         test_3dMat = self.pos_over_time[:,self.nbr_pred:, :]
         positions_adjusted = np.copy(test_3dMat)
         mean_pos = test_3dMat.mean(axis=1)
@@ -66,64 +82,33 @@ class AnalyzeClass(object):
         radial_mean = radial_from_center.mean(axis=1)
         radial_max = np.max(radial_from_center, axis=1)
         radial_min = np.min(radial_from_center, axis=1)
-        
-        plt.figure(dpi=180)
+
         plt.plot(self.time_array, radial_mean)
         plt.fill_between(self.time_array, radial_min, radial_max, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
         plt.title('Radial dilation of prey position')
         plt.xlabel('Time')
         plt.ylabel('Dilation')
-        print('jao')
-        plt.tight_layout()
-        plt.savefig(self.figure_name_beginning + "_calclte_Dajläjtion.png")
-        plt.close()
+        plt.ylim([0, ylim])
+        
+        for i in self.fish_eaten:
+            t = self.time_array[i]
+            plt.plot([t, t], [ylim, ylim*9/10],'r-')
 
-    def calc_corr(self):
+        print('jao')
+
+    def calc_corr(self, ylim):
         N = self.pos_over_time.shape[1]
         T = self.pos_over_time.shape[0]
         prey_correlation_x = np.corrcoef(self.pos_over_time[:, self.nbr_pred:, 0],rowvar=False)
-        prey_correlation_y = np.corrcoef(self.pos_over_time[:, self.nbr_pred:, 1],rowvar=False)
         
-        """
-        pred_correlation_x = np.corrcoef(self.pos_over_time[:, :self.nbr_pred, 0],rowvar=False)
-        pred_correlation_y = np.corrcoef(self.pos_over_time[:, :self.nbr_pred, 1],rowvar=False)
-        """
         i_es = list(range(self.nbr_prey))
         prey_correlation_x[i_es,i_es] = 100
-        prey_correlation_y[i_es,i_es] = 100
         
-        """
-        i_es = list(range(self.nbr_pred))
-        pred_correlation_x[i_es,i_es] = 100
-        pred_correlation_y[i_es,i_es] = 100
-        """
-    
         resolution = 30
-        plt.figure(num=None, figsize=(4, 7), dpi=180, facecolor='w', edgecolor='k')
-        
-        plt.subplot(211)
         freq = plt.hist(prey_correlation_x.reshape(prey_correlation_x.size),resolution, range=(-1,1), weights=100*np.ones(prey_correlation_x.size)/prey_correlation_x.size)
-        plt.text(-1, 0.9*np.max(freq[0]) ,"Prey y-coordinate\ncorrelation histogram")
-        #plt.xlabel("s")
-        plt.ylabel("Frequency [%]")
-
-        plt.subplot(212)
-        freq =plt.hist(prey_correlation_y.reshape(prey_correlation_y.size),resolution, range=(-1,1), weights=100*np.ones(prey_correlation_y.size)/prey_correlation_y.size)
-        plt.text(-1, 0.9*np.max(freq[0]) ,"Prey y-coordinate\ncorrelation histogram")
-        plt.ylabel("Frequency [%]")
-    
-        """
-        plt.subplot(223)
-        plt.hist(pred_correlation_x.reshape(pred_correlation_x.size),resolution, range=(-1,1))
-        plt.title("Pred X Correlation")
-        plt.subplot(224)
-        plt.hist(pred_correlation_y.reshape(pred_correlation_y.size),resolution, range=(-1,1))
-        plt.title("Pred Y Correlation")
-        """ 
-        plt.tight_layout()
+        #plt.text(-1, 0.9*np.max(freq[0]) ,"Prey x-coordinate\ncorrelation distribution")
+        plt.ylim([0, ylim])
         
-        plt.savefig(self.figure_name_beginning + "_posCorr.png")
-        plt.close()
     
     def histogram_of_positions(self):
         test_3dMat = self.pos_over_time[:,self.nbr_pred: , :]
@@ -131,27 +116,20 @@ class AnalyzeClass(object):
         all_x_pos = all_x_pos.reshape(all_x_pos.size)
         all_y_pos = test_3dMat[:, :, 1]
         all_y_pos = all_y_pos.reshape(all_y_pos.size)
-        fig = plt.figure(dpi=180)
+        
         plt.hist2d(all_x_pos, all_y_pos, bins=160, range=[(0, self.size), (0,self.size)])
-
         plt.axis('off')
-        plt.title('Position distribution')
-        #plt.colorbar()
-        plt.tight_layout()
-        plt.savefig(self.figure_name_beginning + "_posHisto.png")
-        plt.close()
+        
+    def calculate_rotation_and_polarization(self, iterations_to_plot, ylim, show_legend):
+        start = self.pos_over_time.shape[0]//2
+        end = start + iterations_to_plot
 
-
-    def calculate_rotation_and_polarization(self):
-        pos_over_time_prey = self.pos_over_time[:, self.nbr_pred:, :]
-        pos_over_time_pred = self.pos_over_time[:, 0:self.nbr_pred, :]
-        vel_over_time_prey = self.vel_over_time[:, self.nbr_pred:, :]
-        vel_over_time_pred = self.vel_over_time[:, 0:self.nbr_pred, :]
+        pos_over_time_prey = self.pos_over_time[start:end, self.nbr_pred:, :]
+        vel_over_time_prey = self.vel_over_time[start:end, self.nbr_pred:, :]
+        
+        time = self.time_array[start:end]
 
         mean_pos_over_time_prey = np.mean(pos_over_time_prey, axis=1)
-        #mean_pos_over_time_pred = np.mean(pos_over_time_pred, axis=1)
-        #mean_vel_over_time_prey = np.mean(vel_over_time_prey, axis=1)
-        #mean_vel_over_time_pred = np.mean(vel_over_time_pred, axis=1)
 
         number_of_timesteps = pos_over_time_prey.shape[0]
         number_of_prey = pos_over_time_prey.shape[1]
@@ -174,24 +152,117 @@ class AnalyzeClass(object):
                 z[t,prey] = x1*y2-x2*y1
         rotation_over_time_prey = np.mean(z,1)
 
-        plt.figure(dpi=180)
-        plt.subplot(121)
-        plt.plot(self.time_array, polarisation_over_time_prey)
-        plt.title("Prey Polarisation")
+       
+        pol_line, = plt.plot(time, polarisation_over_time_prey, label="Prey Polarisation")
+        rot_line, = plt.plot(time, abs(rotation_over_time_prey),label="Prey Rotation")
+        plt.ylim([0, ylim])
+        if show_legend:
+            plt.legend(handles=[pol_line, rot_line])
+ 
+if __name__ == '__main__sadf':
+    
+    dpi = 180
+    configs = ["1","10","2", "7"]
+    filenames = ["MovementData"+nbr+".p" for nbr in configs]
 
-        plt.subplot(122)
-        plt.plot(self.time_array, rotation_over_time_prey)
-        plt.title("Prey Rotation")
+    save_fig = True
 
-        plt.savefig(self.figure_name_beginning + "_pol_rot.png")
-        plt.close()
+    plot_objects = [AnalyzeClass(filename) for filename in filenames]
+
+    ## Histogram
+    if 1 == 12:
+        plt.figure(dpi=dpi)
+        for i in range(4):
+            plt.subplot(221+i)
+            plot_objects[i].histogram_of_positions()
+        plt.tight_layout()
+        if save_fig:
+            plt.savefig("Position_histogram.png")
+        else:
+            plt.show()
+
+    #Correlation
+    if 1 == 12:
+        plt.figure(dpi=dpi)
+        for i in range(4):
+            plt.subplot(221+i)
+            plot_objects[i].calc_corr(30)
+            
+            if i%2==0:
+                plt.ylabel("Frequency [%]")
+            else:
+                frame1 = plt.gca()
+                #frame1.axes.xaxis.set_ticklabels([])
+                frame1.axes.yaxis.set_ticklabels([])        
+        plt.tight_layout()
+        if save_fig:
+            plt.savefig("Correlation_x_pos.png")
+        else:
+            plt.show()
+
+    
+    #Rotation and polarization
+    if 1 == 1:
+        plt.figure(dpi=dpi)
+        for i in range(4):
+            plt.subplot(221+i)
+            plot_objects[i].calculate_rotation_and_polarization(600, 1, i==0)   
+        plt.tight_layout()
+        if save_fig:
+            plt.savefig("Pol_and_rot.png")
+        else:
+            plt.show()
+
+    #Dilation
+    if 1 == 12:
+        plt.figure(dpi=dpi)
+        for i in range(4):
+            plt.subplot(221+i)
+            plot_objects[i].calculate_dilation_of_prey(4)   
+        plt.tight_layout()
+        if save_fig:
+            plt.savefig("Dilation.png")
+        else:
+            plt.show()
+
+    # Graphs
+    if 1 == 12:
+        plt.figure(dpi=dpi)
+        for i in range(4):
+            plt.subplot(221+i)
+            plot_objects[i].calculate_sub_graphs()   
+        if save_fig:
+            plt.savefig("Largest_cluster_histogram.png")
+        else:
+            plt.show()
+        
+        with open("cluster_sizes.p","wb") as f:
+            pickle.dump(cluster_size_dict, f)
+        
+    print("done")
+
 
 if __name__ == '__main__':
-    a = AnalyzeClass('MovementData2.p')
-    #a.calculate_rotation_and_polarization()
-    #a.histogram_of_positions()
-    #a.calc_corr()
-    a.calculate_sub_graphs()
+    dpi = 80
+    filename = "MovementData7.p"
+    plot_object = AnalyzeClass(filename)
 
+    fish_txy = plot_object.pos_over_time
 
+    import matplotlib.animation as animation  
 
+    fig, ax = plt.subplots()
+    scatter_plot_fish, = plt.plot(fish_txy[0,8:,0],fish_txy[0,8:,1], 'ob')
+    scatter_plot_shark, = plt.plot(fish_txy[0,:8,0],fish_txy[0,:8,1], 'or')
+    
+
+    def animate(i):
+        scatter_plot_fish.set_xdata(fish_txy[i,8:,0])  # update the data
+        scatter_plot_fish.set_ydata(fish_txy[i,8:,1])  # update the data
+        scatter_plot_shark.set_xdata(fish_txy[i,:8,0])  # update the data
+        scatter_plot_shark.set_ydata(fish_txy[i,:8,1])  # update the data
+        return scatter_plot_fish,scatter_plot_shark
+
+    ani = animation.FuncAnimation(fig, animate, list(range(fish_txy.shape[0])),
+                              interval=1, blit=True)
+    plt.show()
