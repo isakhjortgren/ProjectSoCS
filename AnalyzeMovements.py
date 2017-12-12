@@ -1,9 +1,12 @@
 import pickle
 import numpy as np
 from numpy import matlib
+
 import matplotlib.pyplot as plt
-import itertools
 from matplotlib.gridspec import GridSpec
+
+import itertools
+
 
 
 try:
@@ -24,6 +27,9 @@ class AnalyzeClass(object):
         self.nbr_pred = fish_data['nbr_pred']
         self.score = fish_data["score"]
         self.fish_eaten = fish_data["fishes_eaten"]
+        
+        self.dont_plot = False
+
         try:
             self.time_array = fish_data['time']
         except: 
@@ -41,11 +47,16 @@ class AnalyzeClass(object):
         fish_pos_t = self.pos_over_time[:, self.nbr_pred:, :]
         threshold = 0.3
 
+        T=fish_pos_t.shape[0]
+        N=fish_pos_t.shape[1]
 
-        if self.figure_name_beginning in cluster_size_dict: 
-            largest_cluster_size = cluster_size_dict[self.figure_name_beginning]
-        else:
-            largest_cluster_size = np.zeros(fish_pos_t.shape[0])
+        try:
+            self.largest_cluster_size = cluster_size_dict[self.figure_name_beginning]
+            self.distances_mat = cluster_size_dict[self.figure_name_beginning+"distances"]
+        except KeyError:
+            self.largest_cluster_size = np.zeros(fish_pos_t.shape[0])
+            self.distances_mat = np.zeros(shape=(T//2, N, N), dtype=np.float16)
+
             for i, fish_xy in enumerate(fish_pos_t):
                 x_diff = np.column_stack([fish_xy[:, 0]] * self.nbr_prey) - np.row_stack([fish_xy[:, 0]] * self.nbr_prey)
                 y_diff = np.column_stack([fish_xy[:, 1]] * self.nbr_prey) - np.row_stack([fish_xy[:, 1]] * self.nbr_prey)
@@ -54,14 +65,22 @@ class AnalyzeClass(object):
                 A_n = np.linalg.matrix_power(A, A.shape[0])
 
                 Lij = (A_n > 0.5).astype(int)
-                largest_cluster_size[i] = np.max(Lij.sum(axis=0))
+                self.largest_cluster_size[i] = np.max(Lij.sum(axis=0))
 
-        cluster_size_dict[self.figure_name_beginning] = np.copy(largest_cluster_size)
+                if i%2==0:
+                    self.distances_mat[i//2] = distances.astype(np.float16)     
+
+            cluster_size_dict[self.figure_name_beginning] = np.copy(self.largest_cluster_size)/N
+            cluster_size_dict[self.figure_name_beginning+"distances"] = np.copy(self.distances_mat)
+
+        if self.dont_plot:
+            return
+
         bins = list(range(0,self.nbr_prey+1))
         
         #plt.hist(largest_cluster_size, resolution)
-        ret = plt.hist(largest_cluster_size,bins, \
-                weights=100*np.ones(largest_cluster_size.size)/largest_cluster_size.size)
+        ret = plt.hist(self.largest_cluster_size,bins, \
+                weights=100*np.ones(self.largest_cluster_size.size)/self.largest_cluster_size.size)
 
         if np.max(ret[0])> 15:
             plt.ylim([0, 100])
@@ -79,12 +98,15 @@ class AnalyzeClass(object):
             positions_adjusted[:, i, :] -= mean_pos
 
         radial_from_center = np.linalg.norm(positions_adjusted, axis=2)
-        radial_mean = radial_from_center.mean(axis=1)
-        radial_max = np.max(radial_from_center, axis=1)
-        radial_min = np.min(radial_from_center, axis=1)
+        self.radial_mean = radial_from_center.mean(axis=1)
+        self.radial_max = np.max(radial_from_center, axis=1)
+        self.radial_min = np.min(radial_from_center, axis=1)
 
-        plt.plot(self.time_array, radial_mean)
-        plt.fill_between(self.time_array, radial_min, radial_max, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
+        if self.dont_plot:
+            return
+
+        plt.plot(self.time_array, self.radial_mean)
+        plt.fill_between(self.time_array, self.radial_min, self.radial_max, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
         plt.title('Radial dilation of prey position')
         plt.xlabel('Time')
         plt.ylabel('Dilation')
@@ -243,25 +265,87 @@ if __name__ == '__main__sadf':
 
 
 if __name__ == '__main__':
-    dpi = 80
-    filename = "MovementData7.p"
-    plot_object = AnalyzeClass(filename)
-
-    fish_txy = plot_object.pos_over_time
-
     import matplotlib.animation as animation  
 
-    fig, ax = plt.subplots()
+    dpi = 80
+    iterations_look_back = 500
+    filename = "MovementData10.p"
+    
+    AC = AnalyzeClass(filename)
+    AC.dont_plot = True
+    
+    AC.calculate_dilation_of_prey(10)
+    
+    AC.calculate_sub_graphs()
+    with open("cluster_sizes.p","wb") as f:
+        pickle.dump(cluster_size_dict, f)
+
+
+
+    fish_txy = AC.pos_over_time
+
+    #fig, ax = plt.subplots()
+    fig = plt.figure(figsize=(8, 6), dpi=dpi)
+
+    gs1 = GridSpec(3, 3)
+    
+    ax1 = plt.subplot(gs1[:, :-1])
+    
+    #plt.subplot(121)
     scatter_plot_fish, = plt.plot(fish_txy[0,8:,0],fish_txy[0,8:,1], 'ob')
     scatter_plot_shark, = plt.plot(fish_txy[0,:8,0],fish_txy[0,:8,1], 'or')
-    
+
+    ax2 = plt.subplot(gs1[-1, -1])
+    pl2, = plt.plot([0,1000],[0,4])
+    ax2.set_ylim([0,3])
+
+    ax3 = plt.subplot(gs1[-2, -1])
+    pl3, = plt.plot([0,1000],[0,4])
+    ax3.set_ylim([0,1.07])    
+
+    ax4 = plt.subplot(gs1[-3, -1])
+    pl4, = plt.plot([0,1000],[0,4])
+    ax4.set_xlim([0,4])
+    ax4.set_ylim([0,1])
+
 
     def animate(i):
         scatter_plot_fish.set_xdata(fish_txy[i,8:,0])  # update the data
         scatter_plot_fish.set_ydata(fish_txy[i,8:,1])  # update the data
         scatter_plot_shark.set_xdata(fish_txy[i,:8,0])  # update the data
         scatter_plot_shark.set_ydata(fish_txy[i,:8,1])  # update the data
-        return scatter_plot_fish,scatter_plot_shark
+ 
+        end=i
+        start = 0 if i-iterations_look_back<0 else i-iterations_look_back
+        
+        #
+        pl2.set_xdata( AC.time_array[start:end:3])
+        pl2.set_ydata(AC.radial_mean[start:end:3])
+        ax2.set_xlim([AC.time_array[start], AC.time_array[start+iterations_look_back] ])
+
+        #Largest cluster size
+        pl3.set_xdata( AC.time_array[start:end:3])
+        pl3.set_ydata(AC.largest_cluster_size[start:end:3])
+        ax3.set_xlim([AC.time_array[start], AC.time_array[start+iterations_look_back] ])
+
+        if i%2==0 and i>20:
+            end = end//2
+            start = end-8
+
+            arr = np.array(AC.distances_mat[start:end].reshape(AC.distances_mat[start:end].size))
+            
+
+            d = np.histogram( arr, bins=20)
+
+            print(d[0])
+            print(d[1])
+            
+
+            pl4.set_xdata(d[1])
+            pl4.set_ydata(d[0])
+
+
+        return scatter_plot_fish,scatter_plot_shark,pl2,pl3,pl4
 
     ani = animation.FuncAnimation(fig, animate, list(range(fish_txy.shape[0])),
                               interval=1, blit=True)
