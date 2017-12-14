@@ -76,7 +76,8 @@ class AnalyzeClass(object):
         if self.dont_plot:
             return
 
-        bins = list(range(0,self.nbr_prey+1))
+        step_size = 2
+        bins = list(range(0, self.nbr_prey+step_size, step_size))
         
         #plt.hist(largest_cluster_size, resolution)
         ret = plt.hist(self.largest_cluster_size,bins, \
@@ -224,7 +225,7 @@ if __name__ == '__main__sadf':
 
     
     #Rotation and polarization
-    if 1 == 1:
+    if 1 == 12:
         plt.figure(dpi=dpi)
         for i in range(4):
             plt.subplot(221+i)
@@ -248,7 +249,7 @@ if __name__ == '__main__sadf':
             plt.show()
 
     # Graphs
-    if 1 == 12:
+    if 1 == 1:
         plt.figure(dpi=dpi)
         for i in range(4):
             plt.subplot(221+i)
@@ -267,7 +268,7 @@ if __name__ == '__main__sadf':
 if __name__ == '__main__':
     import matplotlib.animation as animation  
 
-    dpi = 80
+    dpi = 150
     iterations_look_back = 500
     filename = "MovementData10.p"
     
@@ -280,34 +281,28 @@ if __name__ == '__main__':
     with open("cluster_sizes.p","wb") as f:
         pickle.dump(cluster_size_dict, f)
 
-
-
     fish_txy = AC.pos_over_time
 
-    #fig, ax = plt.subplots()
     fig = plt.figure(figsize=(8, 6), dpi=dpi)
+    gs1 = GridSpec(2, 3)
 
-    gs1 = GridSpec(3, 3)
-    
+    ## Aquarium    
     ax1 = plt.subplot(gs1[:, :-1])
-    
-    #plt.subplot(121)
     scatter_plot_fish, = plt.plot(fish_txy[0,8:,0],fish_txy[0,8:,1], 'ob')
     scatter_plot_shark, = plt.plot(fish_txy[0,:8,0],fish_txy[0,:8,1], 'or')
+    ax1.set_ylim([-0.1, 4.1])
+    ax1.set_xlim([-0.1, 4.1])
+    border_plot, = plt.plot([0,4,4,0,0],[0,0,4,4,0],'k') 
 
+    #Dilation
     ax2 = plt.subplot(gs1[-1, -1])
     pl2, = plt.plot([0,1000],[0,4])
     ax2.set_ylim([0,3])
 
+    #Largest cluster
     ax3 = plt.subplot(gs1[-2, -1])
     pl3, = plt.plot([0,1000],[0,4])
     ax3.set_ylim([0,1.07])    
-
-    ax4 = plt.subplot(gs1[-3, -1])
-    pl4, = plt.plot([0,1000],[0,4])
-    ax4.set_xlim([0,4])
-    ax4.set_ylim([0,1])
-
 
     def animate(i):
         scatter_plot_fish.set_xdata(fish_txy[i,8:,0])  # update the data
@@ -317,35 +312,19 @@ if __name__ == '__main__':
  
         end=i
         start = 0 if i-iterations_look_back<0 else i-iterations_look_back
-        
-        #
+        x_axis = [AC.time_array[start], AC.time_array[start+iterations_look_back] ]
+
+        #Dilation
         pl2.set_xdata( AC.time_array[start:end:3])
         pl2.set_ydata(AC.radial_mean[start:end:3])
-        ax2.set_xlim([AC.time_array[start], AC.time_array[start+iterations_look_back] ])
+        ax2.set_xlim(x_axis)
 
         #Largest cluster size
         pl3.set_xdata( AC.time_array[start:end:3])
         pl3.set_ydata(AC.largest_cluster_size[start:end:3])
-        ax3.set_xlim([AC.time_array[start], AC.time_array[start+iterations_look_back] ])
+        ax2.set_xlim(x_axis)
 
-        if i%2==0 and i>20:
-            end = end//2
-            start = end-8
-
-            arr = np.array(AC.distances_mat[start:end].reshape(AC.distances_mat[start:end].size))
-            
-
-            d = np.histogram( arr, bins=20)
-
-            print(d[0])
-            print(d[1])
-            
-
-            pl4.set_xdata(d[1])
-            pl4.set_ydata(d[0])
-
-
-        return scatter_plot_fish,scatter_plot_shark,pl2,pl3,pl4
+        return scatter_plot_fish,scatter_plot_shark,pl2,pl3,border_plot
 
     ani = animation.FuncAnimation(fig, animate, list(range(fish_txy.shape[0])),
                               interval=1, blit=True)
