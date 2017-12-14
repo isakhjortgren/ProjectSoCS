@@ -57,10 +57,11 @@ class AnalyzeClass(object):
 
         try:
             self.largest_cluster_size = cluster_size_dict[self.figure_name_beginning]
-            self.distances_mat = cluster_size_dict[self.figure_name_beginning+"distances"]
+            #self.distances_mat = cluster_size_dict[self.figure_name_beginning+"distances"]
         except KeyError:
+            print("Calculating largest cluster sizes")
             self.largest_cluster_size = np.zeros(fish_pos_t.shape[0])
-            self.distances_mat = np.zeros(shape=(T//2, N, N), dtype=np.float16)
+            #self.distances_mat = np.zeros(shape=(T//2, N, N), dtype=np.float16)
 
             for i, fish_xy in enumerate(fish_pos_t):
                 x_diff = np.column_stack([fish_xy[:, 0]] * self.nbr_prey) - np.row_stack([fish_xy[:, 0]] * self.nbr_prey)
@@ -76,7 +77,7 @@ class AnalyzeClass(object):
                     self.distances_mat[i//2] = distances.astype(np.float16)     
 
             cluster_size_dict[self.figure_name_beginning] = np.copy(self.largest_cluster_size)/N
-            cluster_size_dict[self.figure_name_beginning+"distances"] = np.copy(self.distances_mat)
+            #cluster_size_dict[self.figure_name_beginning+"distances"] = np.copy(self.distances_mat)
 
         if self.dont_plot:
             return
@@ -275,7 +276,7 @@ if __name__ == '__main__':
 
     dpi = 150
     iterations_look_back = 500
-    filename = "MovementData10.p"
+    filename = "MovementData7.p"
     
     AC = AnalyzeClass(filename)
     AC.dont_plot = True
@@ -352,7 +353,7 @@ if __name__ == '__main__':
 
         return scatter_plot_fish,scatter_plot_shark,pl2,pl3,border_plot, text_plot
 
-    ani = animation.FuncAnimation(fig, animate, list(range(0,fish_txy.shape[0]//20,2)),
+    ani = animation.FuncAnimation(fig, animate, list(range(0,fish_txy.shape[0]//2,2)),
                               interval=1, blit=True)
     
     answer = input("Save or plot (s/p)? ")
