@@ -283,7 +283,7 @@ if __name__ == '__main__':
 
     fish_txy = AC.pos_over_time
 
-    fig = plt.figure(figsize=(8, 6), dpi=dpi)
+    fig = plt.figure(figsize=(9, 5), dpi=dpi)
     gs1 = GridSpec(2, 3)
 
     ## Aquarium    
@@ -292,18 +292,29 @@ if __name__ == '__main__':
     scatter_plot_shark, = plt.plot(fish_txy[0,:8,0],fish_txy[0,:8,1], 'or')
     ax1.set_ylim([-0.1, 4.1])
     ax1.set_xlim([-0.1, 4.1])
+    ax1.axis("off")
+    ax1.axis("equal")
     border_plot, = plt.plot([0,4,4,0,0],[0,0,4,4,0],'k') 
 
     #Dilation
     ax2 = plt.subplot(gs1[-1, -1])
-    pl2, = plt.plot([0,1000],[0,4])
-    ax2.set_ylim([0,3])
+    pl2, = plt.plot([],[])
+    ax2.set_ylim([0,2])
+    ax2.xaxis.set_ticks([])
+    plt.yticks([0.1,1, 1.8], ["Tightly\npacked","Average","Spread\nout"])
+    #ax2.yaxis.set_ticks([0.1,1, 2])
+    #ax2.yaxis.set_ticklabels(["Tightly packed","Average","Spread out"])
+    plt.title("Dilation")
 
     #Largest cluster
     ax3 = plt.subplot(gs1[-2, -1])
-    pl3, = plt.plot([0,1000],[0,4])
+    pl3, = plt.plot([],[])
     ax3.set_ylim([0,1.07])    
-
+    plt.title("Largest cluster size")
+    ax3.xaxis.set_ticks([])
+    ax3.yaxis.set_ticks([0,0.5, 1])
+    ax3.yaxis.set_ticklabels(["0%","50%","100%"])
+    plt.tight_layout()
     def animate(i):
         scatter_plot_fish.set_xdata(fish_txy[i,8:,0])  # update the data
         scatter_plot_fish.set_ydata(fish_txy[i,8:,1])  # update the data
@@ -312,17 +323,18 @@ if __name__ == '__main__':
  
         end=i
         start = 0 if i-iterations_look_back<0 else i-iterations_look_back
-        x_axis = [AC.time_array[start], AC.time_array[start+iterations_look_back] ]
+        x_limits = [AC.time_array[start], AC.time_array[start+iterations_look_back] ]
 
         #Dilation
         pl2.set_xdata( AC.time_array[start:end:3])
         pl2.set_ydata(AC.radial_mean[start:end:3])
-        ax2.set_xlim(x_axis)
+        ax2.set_xlim(x_limits)
 
         #Largest cluster size
         pl3.set_xdata( AC.time_array[start:end:3])
         pl3.set_ydata(AC.largest_cluster_size[start:end:3])
-        ax2.set_xlim(x_axis)
+#        pl3.set_ydata(AC.largest_cluster_size[start:end:3])
+        ax3.set_xlim(x_limits)
 
         return scatter_plot_fish,scatter_plot_shark,pl2,pl3,border_plot
 
