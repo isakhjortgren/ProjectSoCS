@@ -3,6 +3,11 @@ import numpy as np
 from numpy import matlib
 
 import matplotlib.pyplot as plt
+try:
+    import matplotlib.animation as manimation
+except ImportError:
+    pass
+
 from matplotlib.gridspec import GridSpec
 
 import itertools
@@ -322,7 +327,7 @@ if __name__ == '__main__':
         scatter_plot_shark.set_ydata(fish_txy[i,:8,1])  # update the data
  
         end=i
-        start = 0 if i-iterations_look_back<0 else i-iterations_look_back
+        start = max(end - iterations_look_back, 0)
         x_limits = [AC.time_array[start], AC.time_array[start+iterations_look_back] ]
 
         #Dilation
@@ -338,6 +343,12 @@ if __name__ == '__main__':
 
         return scatter_plot_fish,scatter_plot_shark,pl2,pl3,border_plot
 
-    ani = animation.FuncAnimation(fig, animate, list(range(fish_txy.shape[0])),
+    ani = animation.FuncAnimation(fig, animate, list(range(0,fish_txy.shape[0]//20,2)),
                               interval=1, blit=True)
-    plt.show()
+    
+    metadata = dict(title='Fish in a tank simulation', artist='SoCS: Group 19',
+                        comment='Very clever video if we may say so ourselves!')
+    print("Saving ...")
+    ani.save(filename=filename[:-2]+".mp4", fps=40, dpi = 180)
+    print("Save done")
+    #plt.show()
