@@ -33,7 +33,7 @@ class AnalyzeClass(object):
         self.score = fish_data["score"]
         self.fish_eaten = fish_data["fishes_eaten"]
         
-        self.dont_plot = False
+        self.dont_plot = True
 
         try:
             self.time_array = fish_data['time']
@@ -61,8 +61,7 @@ class AnalyzeClass(object):
         except KeyError:
             print("Calculating largest cluster sizes")
             self.largest_cluster_size = np.zeros(fish_pos_t.shape[0])
-            #self.distances_mat = np.zeros(shape=(T//2, N, N), dtype=np.float16)
-
+            
             for i, fish_xy in enumerate(fish_pos_t):
                 x_diff = np.column_stack([fish_xy[:, 0]] * self.nbr_prey) - np.row_stack([fish_xy[:, 0]] * self.nbr_prey)
                 y_diff = np.column_stack([fish_xy[:, 1]] * self.nbr_prey) - np.row_stack([fish_xy[:, 1]] * self.nbr_prey)
@@ -73,12 +72,11 @@ class AnalyzeClass(object):
                 Lij = (A_n > 0.5).astype(int)
                 self.largest_cluster_size[i] = np.max(Lij.sum(axis=0))
 
-                if i%2==0:
-                    self.distances_mat[i//2] = distances.astype(np.float16)     
+                #if i%2==0:
+                #    self.distances_mat[i//2] = distances.astype(np.float16)     
 
-            cluster_size_dict[self.figure_name_beginning] = np.copy(self.largest_cluster_size)/N
-            #cluster_size_dict[self.figure_name_beginning+"distances"] = np.copy(self.distances_mat)
-
+            cluster_size_dict[self.figure_name_beginning] = np.copy(self.largest_cluster_size)
+            
         if self.dont_plot:
             return
 
@@ -89,12 +87,12 @@ class AnalyzeClass(object):
         ret = plt.hist(self.largest_cluster_size,bins, \
                 weights=100*np.ones(self.largest_cluster_size.size)/self.largest_cluster_size.size)
 
-        if np.max(ret[0])> 15:
+        if np.max(ret[0])> 40:
             plt.ylim([0, 100])
-        elif np.max(ret[0])> 5:
-            plt.ylim([0, 15])
+        elif np.max(ret[0])> 10:
+            plt.ylim([0, 100])
         else:
-            plt.ylim([0, 5])
+            plt.ylim([0, 8])
 
 
     def calculate_dilation_of_prey(self, ylim):
@@ -188,15 +186,18 @@ class AnalyzeClass(object):
         if show_legend:
             plt.legend(handles=[pol_line, rot_line])
  
-if __name__ == '__main__sadf':
+if __name__ == '__main__':
     
     dpi = 180
     configs = ["1","10","2", "7"]
     filenames = ["MovementData"+nbr+".p" for nbr in configs]
 
-    save_fig = True
+    save_fig = False
+    
 
     plot_objects = [AnalyzeClass(filename) for filename in filenames]
+    for obj in plot_objects:
+        obj.dont_plot = save_fig
 
     ## Histogram
     if 1 == 12:
@@ -260,6 +261,11 @@ if __name__ == '__main__sadf':
         for i in range(4):
             plt.subplot(221+i)
             plot_objects[i].calculate_sub_graphs()   
+            if i > 1:
+                plt.xlabel("Largest cluster size")
+            if i in [0,2]:
+                plt.ylabel("Fraction of #prey [%]")
+        plt.tight_layout()
         if save_fig:
             plt.savefig("Largest_cluster_histogram.png")
         else:
@@ -271,7 +277,7 @@ if __name__ == '__main__sadf':
     print("done")
 
 
-if __name__ == '__main__':
+if __name__ == '__main__ asdf':
     import matplotlib.animation as animation  
 
     dpi = 150
@@ -284,8 +290,6 @@ if __name__ == '__main__':
     AC.calculate_dilation_of_prey(10)
     
     AC.calculate_sub_graphs()
-    with open("cluster_sizes.p","wb") as f:
-        pickle.dump(cluster_size_dict, f)
 
     fish_txy = AC.pos_over_time
 
