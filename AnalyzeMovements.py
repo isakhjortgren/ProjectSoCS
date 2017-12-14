@@ -291,8 +291,11 @@ if __name__ == '__main__':
     fig = plt.figure(figsize=(9, 5), dpi=dpi)
     gs1 = GridSpec(2, 3)
 
+    str_eaten = "Fishes killed: "
+
     ## Aquarium    
     ax1 = plt.subplot(gs1[:, :-1])
+    text_plot = plt.text(0.1, 0.1, str_eaten+"0",fontsize=16)
     scatter_plot_fish, = plt.plot(fish_txy[0,8:,0],fish_txy[0,8:,1], 'ob')
     scatter_plot_shark, = plt.plot(fish_txy[0,:8,0],fish_txy[0,:8,1], 'or')
     ax1.set_ylim([-0.1, 4.1])
@@ -319,8 +322,14 @@ if __name__ == '__main__':
     ax3.xaxis.set_ticks([])
     ax3.yaxis.set_ticks([0,0.5, 1])
     ax3.yaxis.set_ticklabels(["0%","50%","100%"])
+    
+    print(AC.fish_eaten[:20])
+
     plt.tight_layout()
     def animate(i):
+        text_plot.set_text(str_eaten+str( len(AC.fish_eaten[AC.fish_eaten< i]) ))
+        #text_plot.set_text(str_eaten+str( i))
+
         scatter_plot_fish.set_xdata(fish_txy[i,8:,0])  # update the data
         scatter_plot_fish.set_ydata(fish_txy[i,8:,1])  # update the data
         scatter_plot_shark.set_xdata(fish_txy[i,:8,0])  # update the data
@@ -341,14 +350,17 @@ if __name__ == '__main__':
 #        pl3.set_ydata(AC.largest_cluster_size[start:end:3])
         ax3.set_xlim(x_limits)
 
-        return scatter_plot_fish,scatter_plot_shark,pl2,pl3,border_plot
+        return scatter_plot_fish,scatter_plot_shark,pl2,pl3,border_plot, text_plot
 
     ani = animation.FuncAnimation(fig, animate, list(range(0,fish_txy.shape[0]//20,2)),
                               interval=1, blit=True)
     
-    metadata = dict(title='Fish in a tank simulation', artist='SoCS: Group 19',
-                        comment='Very clever video if we may say so ourselves!')
-    print("Saving ...")
-    ani.save(filename=filename[:-2]+".mp4", fps=40, dpi = 180)
-    print("Save done")
-    #plt.show()
+    answer = input("Save or plot (s/p)? ")
+    if answer == "s":
+        print("Saving ...")
+        ani.save(filename=filename[:-2]+".mp4", fps=40, dpi = 180)
+        print("Save done")
+    elif answer =="p":
+        plt.show()
+    else:
+        print("Not reckonized answer: '", answer,"'",sep="")
