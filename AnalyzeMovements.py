@@ -96,7 +96,7 @@ class AnalyzeClass(object):
 
 
     def calculate_dilation_of_prey(self, ylim):
-        test_3dMat = self.pos_over_time[:,self.nbr_pred:, :]
+        test_3dMat = self.pos_over_time[4000:8000,self.nbr_pred:, :]
         positions_adjusted = np.copy(test_3dMat)
         mean_pos = test_3dMat.mean(axis=1)
         for i in range(test_3dMat.shape[1]):
@@ -192,7 +192,7 @@ if __name__ == '__main__':
     configs = ["1","10","2", "7"]
     filenames = ["MovementData"+nbr+".p" for nbr in configs]
 
-    save_fig = False
+    save_fig = True
     
 
     plot_objects = [AnalyzeClass(filename) for filename in filenames]
@@ -244,7 +244,7 @@ if __name__ == '__main__':
             plt.show()
 
     #Dilation
-    if 1 == 12:
+    if 1 == 1:
         plt.figure(dpi=dpi)
         for i in range(4):
             plt.subplot(221+i)
@@ -264,7 +264,7 @@ if __name__ == '__main__':
             if i > 1:
                 plt.xlabel("Largest cluster size")
             if i in [0,2]:
-                plt.ylabel("Fraction of #prey [%]")
+                plt.ylabel("Probability [%]")
         plt.tight_layout()
         if save_fig:
             plt.savefig("Largest_cluster_histogram.png")
